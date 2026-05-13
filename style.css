@@ -9,6 +9,27 @@ body {
   min-height: 100vh;
 }
 
+/* ── Tab Navigation ── */
+.tab-nav {
+  display: flex;
+  background: #1a3a5c;
+  padding: 0 24px;
+}
+.tab-btn {
+  padding: 14px 28px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: rgba(255,255,255,0.9); }
+.tab-btn.active { color: #fff; border-bottom-color: #4da6ff; }
+
 /* ── Layout ── */
 .view { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
 
@@ -133,7 +154,8 @@ textarea { resize: vertical; width: 100%; }
 .required { color: #e53e3e; }
 
 /* Items table inputs */
-#items-table input, #items-table select {
+#items-table input, #items-table select,
+#quote-items-table input, #quote-items-table select {
   width: 100%;
   padding: 5px 7px;
   border: 1px solid #d0d8e4;
@@ -141,14 +163,17 @@ textarea { resize: vertical; width: 100%; }
   font-size: 13px;
   font-family: inherit;
 }
-#items-table input:focus, #items-table select:focus {
+#items-table input:focus, #items-table select:focus,
+#quote-items-table input:focus, #quote-items-table select:focus {
   outline: none;
   border-color: #1a6fc4;
 }
-#items-table th { font-size: 12px; padding: 9px 8px; }
-#items-table td { padding: 6px 8px; }
-#items-table input[type="number"] { text-align: right; }
+#items-table th, #quote-items-table th { font-size: 12px; padding: 9px 8px; }
+#items-table td, #quote-items-table td { padding: 6px 8px; }
+#items-table input[type="number"],
+#quote-items-table input[type="number"] { text-align: right; }
 .td-amount { text-align: right; font-weight: 600; color: #1a3a5c; white-space: nowrap; }
+.td-rowno  { color: #888; font-size: 12px; width: 36px; }
 
 /* Totals */
 .totals {

@@ -3,184 +3,353 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>수주서 관리</title>
+  <title>수주서 / 견적서 관리</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- 목록 화면 -->
-  <div id="list-view" class="view">
-    <header class="app-header no-print">
-      <h1>수주서 관리</h1>
-      <button class="btn btn-primary" onclick="showForm()">+ 새 수주서 등록</button>
-    </header>
+  <!-- 탭 네비게이션 -->
+  <nav class="tab-nav no-print">
+    <button class="tab-btn active" id="tab-order" onclick="showTab('order')">수주서</button>
+    <button class="tab-btn" id="tab-quote" onclick="showTab('quote')">견적서</button>
+  </nav>
 
-    <div class="filter-bar no-print">
-      <input type="text" id="filter-customer" placeholder="고객사명 검색" oninput="renderList()">
-      <input type="date" id="filter-from" oninput="renderList()">
-      <span>~</span>
-      <input type="date" id="filter-to" oninput="renderList()">
-      <button class="btn btn-secondary" onclick="clearFilters()">초기화</button>
-    </div>
+  <!-- ══════════════════ 수주서 섹션 ══════════════════ -->
+  <div id="section-order">
 
-    <div class="table-wrap no-print">
-      <table id="order-table">
-        <thead>
-          <tr>
-            <th>수주번호</th>
-            <th>고객사</th>
-            <th>수주일자</th>
-            <th>납기일자</th>
-            <th>총금액</th>
-            <th>담당자</th>
-            <th class="col-action">관리</th>
-          </tr>
-        </thead>
-        <tbody id="order-tbody"></tbody>
-      </table>
-      <p id="empty-msg" class="empty-msg" style="display:none">등록된 수주서가 없습니다.</p>
-    </div>
-  </div>
+    <!-- 목록 화면 -->
+    <div id="list-view" class="view">
+      <header class="app-header no-print">
+        <h1>수주서 관리</h1>
+        <button class="btn btn-primary" onclick="showForm()">+ 새 수주서 등록</button>
+      </header>
 
-  <!-- 등록/수정 폼 화면 -->
-  <div id="form-view" class="view" style="display:none">
-    <header class="app-header no-print">
-      <h1 id="form-title">수주서 등록</h1>
-      <div class="header-actions">
-        <button class="btn btn-secondary" onclick="showList()">← 목록으로</button>
-        <button class="btn btn-primary" onclick="saveOrder()">저장</button>
+      <div class="filter-bar no-print">
+        <input type="text" id="filter-customer" placeholder="고객사명 검색" oninput="renderList()">
+        <input type="date" id="filter-from" oninput="renderList()">
+        <span>~</span>
+        <input type="date" id="filter-to" oninput="renderList()">
+        <button class="btn btn-secondary" onclick="clearFilters()">초기화</button>
       </div>
-    </header>
 
-    <form id="order-form" class="order-form" onsubmit="return false">
-      <input type="hidden" id="f-id">
+      <div class="table-wrap no-print">
+        <table id="order-table">
+          <thead>
+            <tr>
+              <th>수주번호</th>
+              <th>고객사</th>
+              <th>수주일자</th>
+              <th>납기일자</th>
+              <th>총금액</th>
+              <th>담당자</th>
+              <th class="col-action">관리</th>
+            </tr>
+          </thead>
+          <tbody id="order-tbody"></tbody>
+        </table>
+        <p id="empty-msg" class="empty-msg" style="display:none">등록된 수주서가 없습니다.</p>
+      </div>
+    </div>
 
-      <div class="form-section">
-        <h2 class="section-title">기본 정보</h2>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>수주번호</label>
-            <input type="text" id="f-order-no" readonly placeholder="자동 생성">
+    <!-- 등록/수정 폼 화면 -->
+    <div id="form-view" class="view" style="display:none">
+      <header class="app-header no-print">
+        <h1 id="form-title">수주서 등록</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="showList()">← 목록으로</button>
+          <button class="btn btn-primary" onclick="saveOrder()">저장</button>
+        </div>
+      </header>
+
+      <form id="order-form" class="order-form" onsubmit="return false">
+        <input type="hidden" id="f-id">
+
+        <div class="form-section">
+          <h2 class="section-title">기본 정보</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>수주번호</label>
+              <input type="text" id="f-order-no" readonly placeholder="자동 생성">
+            </div>
+            <div class="form-group">
+              <label>수주일자 <span class="required">*</span></label>
+              <input type="date" id="f-order-date" required>
+            </div>
+            <div class="form-group">
+              <label>납기일자 <span class="required">*</span></label>
+              <input type="date" id="f-delivery-date" required>
+            </div>
+            <div class="form-group">
+              <label>납품장소</label>
+              <input type="text" id="f-delivery-addr" placeholder="납품장소 입력">
+            </div>
+            <div class="form-group">
+              <label>결제조건</label>
+              <select id="f-payment-terms">
+                <option value="">선택</option>
+                <option value="현금">현금</option>
+                <option value="외상">외상</option>
+                <option value="어음">어음</option>
+                <option value="카드">카드</option>
+                <option value="계좌이체">계좌이체</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>담당 영업자</label>
+              <input type="text" id="f-sales-rep" placeholder="담당자 이름">
+            </div>
           </div>
-          <div class="form-group">
-            <label>수주일자 <span class="required">*</span></label>
-            <input type="date" id="f-order-date" required>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">고객 정보</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>고객사명 <span class="required">*</span></label>
+              <input type="text" id="f-customer-name" required placeholder="고객사명 입력">
+            </div>
+            <div class="form-group">
+              <label>담당자</label>
+              <input type="text" id="f-customer-contact" placeholder="담당자 이름">
+            </div>
+            <div class="form-group">
+              <label>연락처</label>
+              <input type="text" id="f-customer-phone" placeholder="010-0000-0000">
+            </div>
+            <div class="form-group">
+              <label>이메일</label>
+              <input type="email" id="f-customer-email" placeholder="example@email.com">
+            </div>
           </div>
-          <div class="form-group">
-            <label>납기일자 <span class="required">*</span></label>
-            <input type="date" id="f-delivery-date" required>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">품목</h2>
+          <div class="table-wrap">
+            <table id="items-table">
+              <thead>
+                <tr>
+                  <th>품목코드</th>
+                  <th>품목명 <span class="required">*</span></th>
+                  <th>규격/사양</th>
+                  <th>수량</th>
+                  <th>단위</th>
+                  <th>단가</th>
+                  <th>금액</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="items-tbody"></tbody>
+            </table>
           </div>
-          <div class="form-group">
-            <label>납품장소</label>
-            <input type="text" id="f-delivery-addr" placeholder="납품장소 입력">
+          <button type="button" class="btn btn-secondary btn-add-row" onclick="addItemRow()">+ 품목 추가</button>
+
+          <div class="totals">
+            <div class="totals-row">
+              <span>공급가액</span>
+              <span id="t-subtotal">0</span>
+            </div>
+            <div class="totals-row">
+              <span>부가세 (10%)</span>
+              <span id="t-vat">0</span>
+            </div>
+            <div class="totals-row totals-grand">
+              <span>총금액</span>
+              <span id="t-total">0</span>
+            </div>
           </div>
-          <div class="form-group">
-            <label>결제조건</label>
-            <select id="f-payment-terms">
-              <option value="">선택</option>
-              <option value="현금">현금</option>
-              <option value="외상">외상</option>
-              <option value="어음">어음</option>
-              <option value="카드">카드</option>
-              <option value="계좌이체">계좌이체</option>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">도면 / 비고</h2>
+          <div class="drawing-toolbar">
+            <label class="tool-label">도구</label>
+            <button type="button" id="tool-pen" class="tool-btn active" onclick="setTool('pen')" title="펜">✏️ 펜</button>
+            <button type="button" id="tool-eraser" class="tool-btn" onclick="setTool('eraser')" title="지우개">🧹 지우개</button>
+            <button type="button" id="tool-line" class="tool-btn" onclick="setTool('line')" title="직선">📏 직선</button>
+            <button type="button" id="tool-rect" class="tool-btn" onclick="setTool('rect')" title="사각형">⬜ 사각형</button>
+            <div class="tool-sep"></div>
+            <label class="tool-label">색상</label>
+            <input type="color" id="draw-color" value="#000000" title="색상">
+            <label class="tool-label">굵기</label>
+            <select id="draw-width" title="선 굵기">
+              <option value="1">1px</option>
+              <option value="2" selected>2px</option>
+              <option value="4">4px</option>
+              <option value="8">8px</option>
+              <option value="16">16px</option>
             </select>
+            <div class="tool-sep"></div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="clearCanvas()">초기화</button>
           </div>
-          <div class="form-group">
-            <label>담당 영업자</label>
-            <input type="text" id="f-sales-rep" placeholder="담당자 이름">
+          <div class="canvas-wrap">
+            <canvas id="draw-canvas" width="900" height="400"></canvas>
           </div>
         </div>
+      </form>
+    </div>
+
+  </div><!-- /section-order -->
+
+  <!-- ══════════════════ 견적서 섹션 ══════════════════ -->
+  <div id="section-quote" style="display:none">
+
+    <!-- 목록 화면 -->
+    <div id="quote-list-view" class="view">
+      <header class="app-header no-print">
+        <h1>견적서 관리</h1>
+        <button class="btn btn-primary" onclick="showQuoteForm()">+ 새 견적서 작성</button>
+      </header>
+
+      <div class="filter-bar no-print">
+        <input type="text" id="qfilter-customer" placeholder="고객사명 검색" oninput="renderQuoteList()">
+        <input type="date" id="qfilter-from" oninput="renderQuoteList()">
+        <span>~</span>
+        <input type="date" id="qfilter-to" oninput="renderQuoteList()">
+        <button class="btn btn-secondary" onclick="clearQuoteFilters()">초기화</button>
       </div>
 
-      <div class="form-section">
-        <h2 class="section-title">고객 정보</h2>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>고객사명 <span class="required">*</span></label>
-            <input type="text" id="f-customer-name" required placeholder="고객사명 입력">
-          </div>
-          <div class="form-group">
-            <label>담당자</label>
-            <input type="text" id="f-customer-contact" placeholder="담당자 이름">
-          </div>
-          <div class="form-group">
-            <label>연락처</label>
-            <input type="text" id="f-customer-phone" placeholder="010-0000-0000">
-          </div>
-          <div class="form-group">
-            <label>이메일</label>
-            <input type="email" id="f-customer-email" placeholder="example@email.com">
-          </div>
-        </div>
+      <div class="table-wrap no-print">
+        <table id="quote-table">
+          <thead>
+            <tr>
+              <th>견적번호</th>
+              <th>고객사</th>
+              <th>견적일자</th>
+              <th>유효기간</th>
+              <th>총금액</th>
+              <th>담당자</th>
+              <th class="col-action">관리</th>
+            </tr>
+          </thead>
+          <tbody id="quote-tbody"></tbody>
+        </table>
+        <p id="quote-empty-msg" class="empty-msg" style="display:none">등록된 견적서가 없습니다.</p>
       </div>
+    </div>
 
-      <div class="form-section">
-        <h2 class="section-title">품목</h2>
-        <div class="table-wrap">
-          <table id="items-table">
-            <thead>
-              <tr>
-                <th>품목코드</th>
-                <th>품목명 <span class="required">*</span></th>
-                <th>규격/사양</th>
-                <th>수량</th>
-                <th>단위</th>
-                <th>단가</th>
-                <th>금액</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="items-tbody"></tbody>
-          </table>
+    <!-- 등록/수정 폼 화면 -->
+    <div id="quote-form-view" class="view" style="display:none">
+      <header class="app-header no-print">
+        <h1 id="quote-form-title">견적서 작성</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="showQuoteList()">← 목록으로</button>
+          <button class="btn btn-primary" onclick="saveQuote()">저장</button>
         </div>
-        <button type="button" class="btn btn-secondary btn-add-row" onclick="addItemRow()">+ 품목 추가</button>
+      </header>
 
-        <div class="totals">
-          <div class="totals-row">
-            <span>공급가액</span>
-            <span id="t-subtotal">0</span>
+      <form id="quote-form" class="order-form" onsubmit="return false">
+        <input type="hidden" id="qf-id">
+
+        <div class="form-section">
+          <h2 class="section-title">기본 정보</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>견적번호</label>
+              <input type="text" id="qf-quote-no" readonly placeholder="자동 생성">
+            </div>
+            <div class="form-group">
+              <label>견적일자 <span class="required">*</span></label>
+              <input type="date" id="qf-quote-date" required>
+            </div>
+            <div class="form-group">
+              <label>유효기간</label>
+              <input type="date" id="qf-valid-until" placeholder="견적 유효기간">
+            </div>
+            <div class="form-group">
+              <label>납기</label>
+              <input type="text" id="qf-delivery" placeholder="예: 발주 후 14일">
+            </div>
+            <div class="form-group">
+              <label>결제조건</label>
+              <select id="qf-payment-terms">
+                <option value="">선택</option>
+                <option value="현금">현금</option>
+                <option value="외상">외상</option>
+                <option value="어음">어음</option>
+                <option value="카드">카드</option>
+                <option value="계좌이체">계좌이체</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>담당 영업자</label>
+              <input type="text" id="qf-sales-rep" placeholder="담당자 이름">
+            </div>
           </div>
-          <div class="totals-row">
-            <span>부가세 (10%)</span>
-            <span id="t-vat">0</span>
-          </div>
-          <div class="totals-row totals-grand">
-            <span>총금액</span>
-            <span id="t-total">0</span>
-          </div>
         </div>
-      </div>
 
-      <div class="form-section">
-        <h2 class="section-title">도면 / 비고</h2>
-        <div class="drawing-toolbar">
-          <label class="tool-label">도구</label>
-          <button type="button" id="tool-pen" class="tool-btn active" onclick="setTool('pen')" title="펜">✏️ 펜</button>
-          <button type="button" id="tool-eraser" class="tool-btn" onclick="setTool('eraser')" title="지우개">🧹 지우개</button>
-          <button type="button" id="tool-line" class="tool-btn" onclick="setTool('line')" title="직선">📏 직선</button>
-          <button type="button" id="tool-rect" class="tool-btn" onclick="setTool('rect')" title="사각형">⬜ 사각형</button>
-          <div class="tool-sep"></div>
-          <label class="tool-label">색상</label>
-          <input type="color" id="draw-color" value="#000000" title="색상">
-          <label class="tool-label">굵기</label>
-          <select id="draw-width" title="선 굵기">
-            <option value="1">1px</option>
-            <option value="2" selected>2px</option>
-            <option value="4">4px</option>
-            <option value="8">8px</option>
-            <option value="16">16px</option>
-          </select>
-          <div class="tool-sep"></div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="clearCanvas()">초기화</button>
+        <div class="form-section">
+          <h2 class="section-title">고객 정보</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>고객사명 <span class="required">*</span></label>
+              <input type="text" id="qf-customer-name" required placeholder="고객사명 입력">
+            </div>
+            <div class="form-group">
+              <label>담당자</label>
+              <input type="text" id="qf-customer-contact" placeholder="담당자 이름">
+            </div>
+            <div class="form-group">
+              <label>연락처</label>
+              <input type="text" id="qf-customer-phone" placeholder="010-0000-0000">
+            </div>
+            <div class="form-group">
+              <label>이메일</label>
+              <input type="email" id="qf-customer-email" placeholder="example@email.com">
+            </div>
+          </div>
         </div>
-        <div class="canvas-wrap">
-          <canvas id="draw-canvas" width="900" height="400"></canvas>
-        </div>
-      </div>
-    </form>
-  </div>
 
-  <!-- 인쇄 전용 뷰 (항상 숨김, 인쇄 시에만 표시) -->
+        <div class="form-section">
+          <h2 class="section-title">품목</h2>
+          <div class="table-wrap">
+            <table id="quote-items-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>품목명 <span class="required">*</span></th>
+                  <th>규격/사양</th>
+                  <th>수량</th>
+                  <th>단위</th>
+                  <th>단가</th>
+                  <th>금액</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="quote-items-tbody"></tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-secondary btn-add-row" onclick="addQuoteItemRow()">+ 품목 추가</button>
+
+          <div class="totals">
+            <div class="totals-row">
+              <span>공급가액</span>
+              <span id="qt-subtotal">0</span>
+            </div>
+            <div class="totals-row">
+              <span>부가세 (10%)</span>
+              <span id="qt-vat">0</span>
+            </div>
+            <div class="totals-row totals-grand">
+              <span>총금액</span>
+              <span id="qt-total">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="section-title">특기사항 / 비고</h2>
+          <div class="form-group">
+            <textarea id="qf-notes" rows="5" placeholder="백필터 관련 특이사항, 설치조건, 보증기간 등을 입력하세요."></textarea>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+  </div><!-- /section-quote -->
+
+  <!-- 인쇄 전용 뷰 -->
   <div id="print-view" class="print-only"></div>
 
   <script src="app.js"></script>
