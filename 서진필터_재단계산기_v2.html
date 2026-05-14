@@ -474,6 +474,8 @@
             <th>수량<br><span style="font-weight:400;color:var(--text-mute)">개 ★</span></th>
             <th class="result-col">취수<br><span style="font-weight:400">개/폭</span></th>
             <th class="result-col">장수<br><span style="font-weight:400">장</span></th>
+            <th class="result-col">총길이<br><span style="font-weight:400">mm</span></th>
+            <th class="result-col">사용폭<br><span style="font-weight:400">mm</span></th>
             <th class="result-col">원단<br><span style="font-weight:400">m</span></th>
             <th style="width:32px;"></th>
           </tr>
@@ -644,7 +646,10 @@ function calcOne(p, s) {
   const totalMMargin = totalM * (1 + s.margin / 100);
   const tapePcs   = tapePerRow * rows;
 
-  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, totalM, totalMMargin, tapePcs };
+  const totalMmRaw = rows * cutLen;
+  const usedW = pcsPerRow * needW;
+
+  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, totalMm: totalMmRaw, usedW, totalM, totalMMargin, tapePcs };
 }
 
 // ── 테이블 구조 렌더 (행 추가/삭제/로드 시만 호출) ──
@@ -665,6 +670,8 @@ function renderTableStructure() {
           oninput="updateField(${p.id},'qty',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
       <td id="r-pcs-${p.id}"  class="tbl-res mute">—</td>
       <td id="r-rows-${p.id}" class="tbl-res mute">—</td>
+      <td id="r-tlen-${p.id}" class="tbl-res mute">—</td>
+      <td id="r-tw-${p.id}"   class="tbl-res mute">—</td>
       <td id="r-m-${p.id}"   class="tbl-res mute">—</td>
       <td><button class="del-btn" onclick="event.stopPropagation();removeProduct(${p.id})">✕</button></td>
     </tr>`).join('');
@@ -677,14 +684,20 @@ function updateTableResults(results) {
     const rEl = document.getElementById(`r-rows-${p.id}`);
     const mEl = document.getElementById(`r-m-${p.id}`);
     if (!pEl) return;
+    const tlEl = document.getElementById(`r-tlen-${p.id}`);
+    const twEl = document.getElementById(`r-tw-${p.id}`);
     if (r) {
-      pEl.textContent = r.pcsPerRow;  pEl.className = 'tbl-res';
-      rEl.textContent = r.rows;       rEl.className = 'tbl-res';
-      mEl.textContent = r.totalMMargin.toFixed(2); mEl.className = 'tbl-res amber';
+      pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
+      rEl.textContent  = r.rows;                    rEl.className  = 'tbl-res';
+      tlEl.textContent = r.totalMm.toLocaleString(); tlEl.className = 'tbl-res';
+      twEl.textContent = Math.round(r.usedW);        twEl.className = 'tbl-res';
+      mEl.textContent  = r.totalMMargin.toFixed(2);  mEl.className  = 'tbl-res amber';
     } else {
-      pEl.textContent = '—'; pEl.className = 'tbl-res mute';
-      rEl.textContent = '—'; rEl.className = 'tbl-res mute';
-      mEl.textContent = '—'; mEl.className = 'tbl-res mute';
+      pEl.textContent  = '—'; pEl.className  = 'tbl-res mute';
+      rEl.textContent  = '—'; rEl.className  = 'tbl-res mute';
+      tlEl.textContent = '—'; tlEl.className = 'tbl-res mute';
+      twEl.textContent = '—'; twEl.className = 'tbl-res mute';
+      mEl.textContent  = '—'; mEl.className  = 'tbl-res mute';
     }
     // focused-row 하이라이트
     const tr = document.getElementById(`tr-${p.id}`);
@@ -704,11 +717,11 @@ function renderTfoot(results) {
   tfoot.innerHTML = `
     <tr class="total-row">
       <td colspan="6" class="total-label">합계 (${valid.length}종 · ${totalQty}개)</td>
-      <td colspan="2" class="total-label" style="text-align:center;">순수 합계</td>
+      <td colspan="4" class="total-label" style="text-align:center;">순수 합계</td>
       <td class="total-val">${grandM.toFixed(2)} M</td><td></td>
     </tr>
     <tr class="total-row">
-      <td colspan="8" class="total-label">여유(${mg}%) 포함 최종 발주량</td>
+      <td colspan="10" class="total-label">여유(${mg}%) 포함 최종 발주량</td>
       <td class="total-val amber">${grandMg.toFixed(2)} M</td><td></td>
     </tr>`;
 }
