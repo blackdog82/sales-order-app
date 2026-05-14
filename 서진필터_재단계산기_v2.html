@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>서진필터 재단 계산기 v2</title>
+<title>서진필터 재단 계산기 v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -29,812 +29,650 @@
     --mono:       'JetBrains Mono', monospace;
     --sans:       'Noto Sans KR', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
 
   /* ── 헤더 ── */
   .header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 28px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 14px 28px; display: flex; align-items: center; gap: 14px;
   }
   .header-icon {
-    width: 38px; height: 38px;
+    width: 36px; height: 36px;
     background: linear-gradient(135deg, var(--green-dark), var(--green));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px;
   }
-  .header-title { font-size: 17px; font-weight: 700; color: var(--text); }
-  .header-sub   { font-size: 11px; color: var(--text-mute); margin-top: 1px; font-family: var(--mono); }
+  .header-title { font-size: 16px; font-weight: 700; }
+  .header-sub   { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-top: 1px; }
   .header-tag {
-    margin-left: auto;
-    background: rgba(74,222,128,0.1);
-    border: 1px solid rgba(74,222,128,0.3);
-    color: var(--green);
-    font-size: 10px; font-weight: 500;
-    padding: 3px 10px; border-radius: 20px;
-    font-family: var(--mono);
-    letter-spacing: 0.5px;
+    margin-left: auto; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3);
+    color: var(--green); font-size: 10px; font-weight: 500;
+    padding: 3px 10px; border-radius: 20px; font-family: var(--mono);
   }
 
-  /* ── 메인 ── */
+  /* ── 레이아웃 ── */
   .main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 28px 20px 60px;
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 20px;
-    align-items: start;
+    max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px;
+    display: grid; grid-template-columns: 1fr 420px; gap: 20px; align-items: start;
   }
 
   /* ── 카드 ── */
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 18px;
-    animation: fadeUp 0.4s ease both;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px; margin-bottom: 16px;
+    animation: fadeUp 0.35s ease both;
   }
   .card:nth-child(2) { animation-delay: 0.06s; }
   .card:nth-child(3) { animation-delay: 0.12s; }
-  @keyframes fadeUp {
-    from { opacity:0; transform: translateY(12px); }
-    to   { opacity:1; transform: translateY(0); }
-  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
   .card-header {
     display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
   }
   .step-badge {
-    width: 24px; height: 24px;
-    background: var(--green-dark);
-    color: var(--green-pale);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    font-family: var(--mono);
-    flex-shrink: 0;
+    width: 22px; height: 22px; background: var(--green-dark); color: var(--green-pale);
+    border-radius: 5px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; font-family: var(--mono); flex-shrink: 0;
   }
   .step-badge.amber { background: #92400E; color: #FDE68A; }
-  .card-title { font-size: 14px; font-weight: 700; color: var(--text); }
-  .card-desc  { font-size: 11px; color: var(--text-mute); margin-left: auto; font-family: var(--mono); }
+  .card-title { font-size: 13px; font-weight: 700; }
+  .card-desc  { font-size: 10px; color: var(--text-mute); margin-left: auto; font-family: var(--mono); }
 
-  /* ── 폼 ── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
-  .form-grid.four  { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .form-grid.full  { grid-template-columns: 1fr; }
-
-  .fg {
-    display: flex; flex-direction: column; gap: 6px;
-  }
+  /* ── 폼 기본 ── */
+  .fg { display: flex; flex-direction: column; gap: 5px; }
   .fl {
-    font-size: 11px; font-weight: 500;
-    color: var(--text-dim);
-    letter-spacing: 0.3px;
-    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 500; color: var(--text-dim);
+    display: flex; align-items: center; gap: 5px;
   }
   .fl .unit {
-    font-family: var(--mono);
-    color: var(--text-mute);
-    font-size: 10px;
-    background: var(--bg3);
-    padding: 1px 6px; border-radius: 4px;
+    font-family: var(--mono); color: var(--text-mute); font-size: 9px;
+    background: var(--bg3); padding: 1px 5px; border-radius: 3px;
   }
   .fl .ref-tag {
-    font-family: var(--mono);
-    color: var(--blue-dim);
-    font-size: 9px;
-    background: rgba(96,165,250,0.1);
-    border: 1px solid rgba(96,165,250,0.25);
-    padding: 1px 6px; border-radius: 4px;
+    font-family: var(--mono); color: var(--blue-dim); font-size: 9px;
+    background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.25);
+    padding: 1px 5px; border-radius: 3px;
   }
+  .form-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.four  { grid-template-columns: repeat(4,1fr); }
+  .form-grid.five  { grid-template-columns: repeat(5,1fr); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 
   input, select {
-    background: var(--bg3);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 14px;
-    font-family: var(--mono);
-    color: var(--text);
-    outline: none;
-    transition: all 0.2s;
-    width: 100%;
+    background: var(--bg3); border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; font-size: 13px; font-family: var(--mono); color: var(--text);
+    outline: none; transition: all 0.2s; width: 100%;
   }
   input:focus, select:focus {
-    border-color: var(--green-dim);
-    background: var(--bg2);
+    border-color: var(--green-dim); background: var(--bg2);
     box-shadow: 0 0 0 3px rgba(74,222,128,0.1);
   }
-  input::placeholder { color: var(--text-mute); font-size: 12px; }
+  input::placeholder { color: var(--text-mute); font-size: 11px; }
   input[readonly] {
-    color: var(--green);
-    border-color: rgba(74,222,128,0.3);
-    background: rgba(74,222,128,0.05);
-    cursor: default;
-    font-weight: 700;
+    color: var(--green); border-color: rgba(74,222,128,0.3);
+    background: rgba(74,222,128,0.05); cursor: default; font-weight: 700;
   }
-  input[readonly]:focus { box-shadow: none; border-color: rgba(74,222,128,0.3); }
-  input.ref-input {
-    color: var(--blue);
-    border-color: rgba(96,165,250,0.3);
-    background: rgba(96,165,250,0.05);
-  }
-  input.ref-input:focus { border-color: var(--blue-dim); box-shadow: 0 0 0 3px rgba(96,165,250,0.1); }
+  input[readonly]:focus { box-shadow: none; }
 
-  /* ── 원단 폭 선택 버튼 ── */
-  .fabric-btns {
-    display: flex; gap: 8px; flex-wrap: wrap;
-    margin-bottom: 14px;
+  /* ── 빠른 선택 버튼 ── */
+  .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .qbtn {
+    background: var(--bg3); border: 1.5px solid var(--border); color: var(--text-dim);
+    border-radius: 7px; padding: 5px 11px; font-family: var(--mono); font-size: 11px;
+    cursor: pointer; transition: all 0.15s;
   }
-  .fabric-btn {
-    background: var(--bg3);
-    border: 1.5px solid var(--border);
-    color: var(--text-dim);
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-family: var(--mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .fabric-btn:hover { border-color: var(--green-dim); color: var(--green); }
-  .fabric-btn.active {
-    background: rgba(74,222,128,0.1);
-    border-color: var(--green-dim);
-    color: var(--green);
-    font-weight: 700;
-  }
+  .qbtn:hover  { border-color: var(--amber-dim); color: var(--amber); }
+  .qbtn.active { background: rgba(252,211,77,0.1); border-color: var(--amber-dim); color: var(--amber); font-weight: 700; }
+  .qbtn.green:hover  { border-color: var(--green-dim); color: var(--green); }
+  .qbtn.green.active { background: rgba(74,222,128,0.1); border-color: var(--green-dim); color: var(--green); font-weight: 700; }
 
-  /* ── 시접 설정 ── */
-  .seam-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-  .seam-btn {
-    background: var(--bg3);
-    border: 1.5px solid var(--border);
-    color: var(--text-dim);
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-family: var(--mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
+  /* ── 제품 테이블 ── */
+  .product-table-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: 10px; border: 1px solid var(--border); }
+  .product-table {
+    width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px;
+    min-width: 680px;
   }
-  .seam-btn:hover { border-color: var(--amber-dim); color: var(--amber); }
-  .seam-btn.active { background: rgba(252,211,77,0.1); border-color: var(--amber-dim); color: var(--amber); font-weight: 700; }
+  .product-table th {
+    background: var(--bg3); color: var(--text-dim); font-weight: 600;
+    padding: 9px 10px; text-align: center; border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 10px; letter-spacing: 0.3px;
+  }
+  .product-table th.result-col { color: var(--green); background: rgba(74,222,128,0.05); }
+  .product-table td {
+    padding: 6px 6px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle;
+  }
+  .product-table tr:last-child td { border-bottom: none; }
+  .product-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .product-table tr.focused-row td { background: rgba(74,222,128,0.04); }
 
-  /* ── 구분선 ── */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+  .tbl-num {
+    color: var(--text-mute); font-size: 11px; font-weight: 700;
+    width: 28px; text-align: center;
+  }
+  .tbl-input {
+    background: transparent; border: 1px solid transparent; border-radius: 6px;
+    padding: 6px 8px; font-size: 12px; font-family: var(--mono); color: var(--text);
+    outline: none; width: 100%; text-align: center; transition: all 0.15s; min-width: 60px;
+  }
+  .tbl-input:focus { border-color: var(--green-dim); background: var(--bg2); }
+  .tbl-input::placeholder { color: var(--text-mute); font-size: 10px; }
+  .tbl-res { color: var(--green); font-weight: 700; font-size: 13px; }
+  .tbl-res.amber { color: var(--amber); }
+  .tbl-res.mute { color: var(--text-mute); }
+
+  .del-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-mute);
+    border-radius: 5px; padding: 4px 8px; font-size: 12px; cursor: pointer;
+    transition: all 0.15s; font-family: var(--mono);
+  }
+  .del-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .total-row td { background: rgba(74,222,128,0.04); border-top: 1px solid var(--border2) !important; }
+  .total-label { color: var(--text-dim); font-size: 11px; font-weight: 700; text-align: right; padding-right: 8px; }
+  .total-val   { color: var(--green); font-size: 15px; font-weight: 700; }
+  .total-val.amber { color: var(--amber); }
+
+  .add-row-btn {
+    width: 100%; padding: 10px; background: var(--bg3); border: 1.5px dashed var(--border2);
+    color: var(--text-mute); border-radius: 8px; cursor: pointer; font-size: 12px;
+    font-family: var(--mono); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-row-btn:hover { border-color: var(--green-dim); color: var(--green); }
 
   /* ── 결과 패널 ── */
   .result-panel { position: sticky; top: 20px; }
 
-  /* 폭 시각화 */
   .fabric-vis {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 16px;
-    overflow: hidden;
-    position: relative;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 14px; overflow: hidden;
   }
-  .vis-title { font-size: 11px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 14px; }
+  .vis-title { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 10px; }
   .vis-strip {
-    height: 48px;
-    background: linear-gradient(135deg, #2A3D2E, #1D2B20);
-    border: 1px solid var(--border2);
-    border-radius: 6px;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 6px;
+    height: 42px; background: linear-gradient(135deg, #2A3D2E, #1D2B20);
+    border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; margin-bottom: 5px;
   }
   .vis-pcs { display: flex; height: 100%; }
   .vis-piece {
-    flex: 1;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-family: var(--mono); color: var(--green);
-    border-right: 1px dashed rgba(74,222,128,0.3);
-    font-weight: 700;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-family: var(--mono); color: var(--green);
+    border-right: 1px dashed rgba(74,222,128,0.3); font-weight: 700;
   }
   .vis-piece:last-child { border-right: none; }
-  .vis-remainder {
-    background: rgba(248,113,113,0.15);
-    border-left: 1px dashed var(--red) !important;
-    color: var(--red) !important;
-  }
-  .vis-labels {
-    display: flex; justify-content: space-between;
-    font-size: 10px; color: var(--text-mute); font-family: var(--mono);
-  }
+  .vis-remainder { background: rgba(248,113,113,0.15); border-left: 1px dashed var(--red) !important; color: var(--red) !important; }
+  .vis-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-mute); font-family: var(--mono); }
 
-  /* 메인 결과 카드 */
-  .res-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 14px;
+  /* 요약 카드 */
+  .summary-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px; margin-bottom: 12px;
   }
-  .res-big-label { font-size: 11px; color: var(--text-mute); font-family: var(--mono); letter-spacing: 0.5px; margin-bottom: 4px; }
-  .res-big-val {
-    font-size: 40px; font-weight: 700;
-    font-family: var(--mono);
-    color: var(--green);
-    line-height: 1;
-    margin-bottom: 2px;
-  }
-  .res-big-unit { font-size: 16px; color: var(--text-dim); font-family: var(--mono); }
-  .res-big-sub  { font-size: 12px; color: var(--text-mute); margin-top: 6px; }
+  .sum-big-label { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 3px; }
+  .sum-big-val   { font-size: 38px; font-weight: 700; font-family: var(--mono); color: var(--green); line-height: 1; }
+  .sum-big-unit  { font-size: 15px; color: var(--text-dim); font-family: var(--mono); }
+  .sum-big-sub   { font-size: 11px; color: var(--text-mute); margin-top: 5px; }
 
-  .res-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 14px;
+  /* 제품별 결과 목록 */
+  .prod-result-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .prod-result-item {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center;
   }
-  .res-item {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-  }
-  .res-item-label { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 4px; }
-  .res-item-val   { font-size: 18px; font-weight: 700; font-family: var(--mono); color: var(--text); }
-  .res-item-unit  { font-size: 11px; color: var(--text-dim); margin-left: 3px; }
-  .res-item.highlight { border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.05); }
-  .res-item.highlight .res-item-val { color: var(--green); }
-  .res-item.warn-item { border-color: rgba(252,211,77,0.3); background: rgba(252,211,77,0.05); }
-  .res-item.warn-item .res-item-val { color: var(--amber); }
+  .prod-result-item.focused { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.04); }
+  .pri-num { font-size: 10px; color: var(--text-mute); font-family: var(--mono); }
+  .pri-spec { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+  .pri-spec strong { color: var(--text); }
+  .pri-val { font-size: 15px; font-weight: 700; font-family: var(--mono); color: var(--green); text-align: right; }
+  .pri-val .sub { font-size: 10px; color: var(--text-mute); font-weight: 400; }
 
-  /* 계산 공식 표시 */
-  .formula-box {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    font-family: var(--mono);
-    font-size: 11px;
-    line-height: 1.9;
-  }
-  .formula-line { display: flex; justify-content: space-between; align-items: center; }
-  .formula-eq   { color: var(--text-dim); }
-  .formula-val  { color: var(--green); font-weight: 700; }
-  .formula-sep  { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
-  .formula-total { color: var(--green); font-weight: 700; font-size: 12px; }
-
-  /* 버튼 */
-  .btn {
-    width: 100%; padding: 12px;
-    border-radius: 10px; border: none;
-    cursor: pointer; font-size: 13px; font-weight: 700;
-    font-family: var(--sans); letter-spacing: 0.2px;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-bottom: 8px;
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--green-dark), var(--green-dim));
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(74,222,128,0.25);
-  }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,222,128,0.35); }
-  .btn-blue {
-    background: linear-gradient(135deg, var(--blue-dark), var(--blue-dim));
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(96,165,250,0.2);
-  }
-  .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(96,165,250,0.3); }
-  .btn-ghost {
-    background: var(--bg3); color: var(--text-dim);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: var(--bg2); color: var(--text); }
-
-  /* 알림 배지 */
+  /* 경고 */
   .alert-box {
-    background: rgba(252,211,77,0.08);
-    border: 1px solid rgba(252,211,77,0.25);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 12px;
-    color: var(--amber);
-    margin-bottom: 14px;
-    display: none;
-    font-family: var(--mono);
-    line-height: 1.7;
-    white-space: pre-line;
+    background: rgba(252,211,77,0.08); border: 1px solid rgba(252,211,77,0.25);
+    border-radius: 8px; padding: 10px 12px; font-size: 11px; color: var(--amber);
+    margin-bottom: 12px; display: none; font-family: var(--mono); line-height: 1.7; white-space: pre-line;
   }
   .alert-box.show { display: block; }
 
-  /* 저장 프로파일 */
-  .profile-list { display: flex; flex-direction: column; gap: 8px; }
-  .profile-item {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: flex; align-items: center; gap: 10px;
-    transition: all 0.15s;
+  /* 버튼 */
+  .btn {
+    width: 100%; padding: 11px; border-radius: 9px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 700;
+    font-family: var(--sans); transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 7px;
   }
-  .profile-item:hover { border-color: var(--border2); }
+  .btn-primary { background: linear-gradient(135deg,var(--green-dark),var(--green-dim)); color:#fff; box-shadow:0 4px 14px rgba(74,222,128,0.25); }
+  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(74,222,128,0.35); }
+  .btn-blue { background: linear-gradient(135deg,var(--blue-dark),var(--blue-dim)); color:#fff; }
+  .btn-blue:hover { transform:translateY(-1px); }
+  .btn-ghost { background:var(--bg3); color:var(--text-dim); border:1px solid var(--border); }
+  .btn-ghost:hover { background:var(--bg2); color:var(--text); }
+
+  /* 프로파일 */
+  .profile-list { display: flex; flex-direction: column; gap: 7px; }
+  .profile-item {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 9px;
+    padding: 10px 12px; display: flex; align-items: center; gap: 8px;
+  }
   .profile-info { flex: 1; }
-  .profile-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-  .profile-spec { font-size: 11px; color: var(--text-mute); font-family: var(--mono); }
+  .profile-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .profile-spec { font-size: 10px; color: var(--text-mute); font-family: var(--mono); }
   .profile-btn {
-    background: transparent; border: 1px solid var(--border);
-    color: var(--text-dim); border-radius: 6px;
-    padding: 5px 10px; font-size: 11px; cursor: pointer;
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    border-radius: 5px; padding: 4px 9px; font-size: 10px; cursor: pointer;
     font-family: var(--mono); transition: all 0.15s;
   }
   .profile-btn:hover { border-color: var(--green-dim); color: var(--green); }
   .profile-btn.del:hover { border-color: var(--red); color: var(--red); }
-  .profile-empty { font-size: 12px; color: var(--text-mute); font-family: var(--mono); padding: 16px; text-align: center; }
+  .profile-empty { font-size: 11px; color: var(--text-mute); font-family: var(--mono); padding: 14px; text-align: center; }
 
   /* 토스트 */
   .toast {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--green-dark);
-    color: var(--green-pale);
-    padding: 12px 24px; border-radius: 50px;
-    font-size: 13px; font-weight: 600;
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: var(--green-dark); color: var(--green-pale);
+    padding: 11px 22px; border-radius: 50px; font-size: 13px; font-weight: 600;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    z-index: 999; white-space: nowrap;
-    font-family: var(--sans);
+    z-index: 999; white-space: nowrap; font-family: var(--sans);
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   /* 반응형 */
-  @media (max-width: 820px) {
+  @media (max-width: 860px) {
     .main { grid-template-columns: 1fr; }
     .result-panel { position: static; }
-    .form-grid.three { grid-template-columns: 1fr 1fr; }
-    .form-grid.four  { grid-template-columns: 1fr 1fr; }
+    .form-grid.four { grid-template-columns: 1fr 1fr; }
+    .form-grid.five { grid-template-columns: 1fr 1fr 1fr; }
   }
 
   /* ── 인쇄 ── */
   @media print {
-    body { background: #fff !important; color: #111 !important; }
-    .header { background: #f0f0f0 !important; border-bottom: 2px solid #333 !important; }
-    .header-icon { background: #333 !important; }
-    .header-title, .header-sub, .header-tag { color: #111 !important; }
-    .card, .res-card, .formula-box, .res-item, .fabric-vis, .profile-item {
-      background: #fff !important; border-color: #ccc !important; color: #111 !important;
-      box-shadow: none !important;
+    body { background:#fff !important; color:#111 !important; }
+    .header { background:#f0f0f0 !important; }
+    .card, .summary-card, .fabric-vis, .prod-result-item, .product-table th, .product-table td {
+      background:#fff !important; border-color:#ccc !important; color:#111 !important;
     }
-    .card-title, .card-desc, .step-badge, .fl, .fl .unit,
-    .res-big-label, .res-big-val, .res-big-unit, .res-big-sub,
-    .res-item-label, .res-item-val, .res-item-unit,
-    .formula-eq, .formula-val, .formula-total,
-    .vis-title, .vis-labels { color: #111 !important; }
-    input, select { background: #f5f5f5 !important; color: #111 !important; border-color: #aaa !important; }
-    .btn, .toast, .alert-box { display: none !important; }
-    .result-panel { position: static !important; }
-    .main { grid-template-columns: 1fr !important; }
-    .vis-strip { background: #e0e0e0 !important; }
-    .vis-piece { color: #333 !important; border-color: #999 !important; }
+    .btn, .toast, .add-row-btn, .del-btn, .profile-btn { display:none !important; }
+    .result-panel { position:static !important; }
+    .main { grid-template-columns:1fr !important; }
   }
 </style>
 </head>
 <body>
 
-<!-- 헤더 -->
 <div class="header">
   <div class="header-icon">✂️</div>
   <div>
     <div class="header-title">서진필터 재단 계산기</div>
-    <div class="header-sub">BAG FILTER CUTTING CALCULATOR v2.1</div>
+    <div class="header-sub">BAG FILTER CUTTING CALCULATOR v3.0 — 다중 제품 지원</div>
   </div>
   <div class="header-tag">내부 전용</div>
 </div>
 
 <div class="main">
+<div><!-- 왼쪽 -->
 
-  <!-- 왼쪽 입력 -->
-  <div>
+  <!-- STEP 01: 공통 설정 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge">01</div>
+      <div class="card-title">공통 원단 설정</div>
+      <div class="card-desc">전 제품 공통 적용</div>
+    </div>
 
-    <!-- STEP 1: 백필터 규격 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="step-badge">01</div>
-        <div class="card-title">백필터 규격 입력</div>
-        <div class="card-desc">H / 홀치수 / 링치수 / 길이</div>
+    <!-- 원단 폭 -->
+    <label class="fl" style="margin-bottom:6px;">원단 폭 빠른 선택</label>
+    <div class="quick-btns">
+      <div class="qbtn green active" onclick="setFabric(this,2150)">2,150mm</div>
+      <div class="qbtn green" onclick="setFabric(this,2000)">2,000mm</div>
+      <div class="qbtn green" onclick="setFabric(this,1800)">1,800mm</div>
+      <div class="qbtn green" onclick="setFabric(this,1500)">1,500mm</div>
+      <div class="qbtn green" onclick="setFabric(this,0)">직접입력</div>
+    </div>
+    <div class="fg" style="margin-bottom:14px;">
+      <label class="fl">원단 폭 <span class="unit">mm</span></label>
+      <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();calc()">
+    </div>
+
+    <div class="form-grid five" style="gap:10px;">
+      <div class="fg">
+        <label class="fl">본체 시접 <span class="unit">mm</span></label>
+        <input type="number" id="seam_body" value="20" oninput="calc()">
       </div>
-
-      <div class="form-grid four">
-        <div class="fg">
-          <label class="fl">H (하우징 내경) <span class="unit">mm</span></label>
-          <input type="number" id="h_val" placeholder="예) 162" class="ref-input" oninput="calc()" title="참고용">
-        </div>
-        <div class="fg">
-          <label class="fl">홀 치수 <span class="unit">mm</span> <span class="ref-tag">참고</span></label>
-          <input type="number" id="hole_val" placeholder="예) 158" class="ref-input" oninput="calc()" title="참고용">
-        </div>
-        <div class="fg">
-          <label class="fl">링 치수 <span class="unit">mm</span></label>
-          <input type="number" id="ring_val" placeholder="예) 156" oninput="calc()">
-        </div>
-        <div class="fg">
-          <label class="fl">필터 길이 L <span class="unit">mm</span></label>
-          <input type="number" id="length_val" placeholder="예) 3000" oninput="calc()">
-        </div>
+      <div class="fg">
+        <label class="fl">상부 스냅링 <span class="unit">mm</span></label>
+        <input type="number" id="seam_snap" value="100" oninput="calc()">
       </div>
-
-      <div style="background:rgba(96,165,250,0.07); border:1px solid rgba(96,165,250,0.2); border-radius:8px; padding:10px 14px; font-family:var(--mono); font-size:11px; color:var(--blue); margin-top:14px;">
-        H·홀치수는 규격 기록용입니다. 원단 계산은 <strong>링치수</strong>를 기준으로 합니다.
+      <div class="fg">
+        <label class="fl">하부 덧단 <span class="unit">mm</span></label>
+        <input type="number" id="seam_hem" value="0" oninput="calc()" placeholder="0">
       </div>
-
-      <div class="form-grid" style="margin-top:14px;">
-        <div class="fg">
-          <label class="fl">생산 수량 <span class="unit">개</span></label>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <button class="fabric-btn" onclick="addQty(-50)" style="padding:8px 12px; flex-shrink:0;">−50</button>
-            <button class="fabric-btn" onclick="addQty(-10)" style="padding:8px 12px; flex-shrink:0;">−10</button>
-            <input type="number" id="qty_val" placeholder="300" value="300" oninput="calc()" style="text-align:center; font-size:14px; font-weight:700; min-width:80px;">
-            <button class="fabric-btn" onclick="addQty(10)" style="padding:8px 12px; flex-shrink:0;">+10</button>
-            <button class="fabric-btn" onclick="addQty(50)" style="padding:8px 12px; flex-shrink:0;">+50</button>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl">여유율 <span class="unit">%</span></label>
-          <select id="margin_val" onchange="calc()">
-            <option value="0">0% — 여유 없음</option>
-            <option value="3">3% — 소량 여유</option>
-            <option value="5" selected>5% — 표준 권장</option>
-            <option value="8">8% — 넉넉하게</option>
-            <option value="10">10% — 최대 여유</option>
-          </select>
-        </div>
+      <div class="fg">
+        <label class="fl">링테이프 폭 <span class="unit">mm</span></label>
+        <input type="number" id="tape_w" value="67" oninput="calc()">
+      </div>
+      <div class="fg">
+        <label class="fl">여유율 <span class="unit">%</span></label>
+        <select id="margin_val" onchange="calc()">
+          <option value="0">0%</option>
+          <option value="3">3%</option>
+          <option value="5" selected>5%</option>
+          <option value="8">8%</option>
+          <option value="10">10%</option>
+        </select>
       </div>
     </div>
 
-    <!-- STEP 2: 원단 설정 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="step-badge">02</div>
-        <div class="card-title">원단 설정</div>
-        <div class="card-desc">폭 / 시접 / 길이 여유</div>
-      </div>
-
-      <!-- 원단 폭 빠른 선택 -->
-      <label class="fl" style="margin-bottom:8px;">원단 폭 빠른 선택</label>
-      <div class="fabric-btns">
-        <div class="fabric-btn active" onclick="setFabric(this, 2150)">2,150mm</div>
-        <div class="fabric-btn" onclick="setFabric(this, 2000)">2,000mm</div>
-        <div class="fabric-btn" onclick="setFabric(this, 1800)">1,800mm</div>
-        <div class="fabric-btn" onclick="setFabric(this, 1500)">1,500mm</div>
-        <div class="fabric-btn" onclick="setFabric(this, 0)">직접입력</div>
-      </div>
-      <div class="fg" style="margin-bottom:14px;">
-        <label class="fl">원단 폭 <span class="unit">mm</span></label>
-        <input type="number" id="fabric_w" value="2150" oninput="onFabricInput(); calc()">
-      </div>
-
-      <hr class="divider">
-
-      <!-- 본체 시접 -->
-      <div style="margin-bottom:12px;">
-        <label class="fl" style="margin-bottom:8px;">본체 시접 (폭 방향) <span class="unit">mm</span></label>
-        <div class="seam-btns">
-          <div class="seam-btn active" onclick="setSeam('body', this, 20)">20mm</div>
-          <div class="seam-btn" onclick="setSeam('body', this, 25)">25mm</div>
-          <div class="seam-btn" onclick="setSeam('body', this, 30)">30mm</div>
-          <div class="seam-btn" onclick="setSeam('body', this, 0)">직접입력</div>
-        </div>
-        <input type="number" id="seam_body" value="20" oninput="calc()" style="margin-top:8px; max-width:140px;">
-      </div>
-
-      <!-- 상부 스냅링 -->
-      <div style="margin-bottom:12px;">
-        <label class="fl" style="margin-bottom:8px;">상부 스냅링 (길이 방향) <span class="unit">mm</span></label>
-        <div class="seam-btns">
-          <div class="seam-btn" onclick="setSeam('snap', this, 50)">50mm</div>
-          <div class="seam-btn active" onclick="setSeam('snap', this, 100)">100mm</div>
-          <div class="seam-btn" onclick="setSeam('snap', this, 150)">150mm</div>
-          <div class="seam-btn" onclick="setSeam('snap', this, 0)">직접입력</div>
-        </div>
-        <input type="number" id="seam_snap" value="100" oninput="calc()" style="margin-top:8px; max-width:140px;">
-      </div>
-
-      <!-- 하부 덧단 -->
-      <div style="margin-bottom:12px;">
-        <label class="fl" style="margin-bottom:8px;">하부 덧단 (길이 방향) <span class="unit">mm</span></label>
-        <input type="number" id="seam_hem" value="0" oninput="calc()" style="max-width:140px;" placeholder="예) 50">
-      </div>
-
-      <hr class="divider">
-
-      <!-- 링테이프 -->
-      <div style="margin-bottom:12px;">
-        <label class="fl" style="margin-bottom:8px;">링테이프 기준 폭 <span class="unit">mm · 잔여 폭 활용</span></label>
-        <div class="seam-btns">
-          <div class="seam-btn active" onclick="setTapeW(this, 67)">67mm</div>
-          <div class="seam-btn" onclick="setTapeW(this, 60)">60mm</div>
-          <div class="seam-btn" onclick="setTapeW(this, 70)">70mm</div>
-          <div class="seam-btn" onclick="setTapeW(this, 0)">직접입력</div>
-        </div>
-        <input type="number" id="tape_w" value="67" oninput="calc()" style="margin-top:8px; max-width:140px;">
-      </div>
-
-      <hr class="divider">
-
-      <!-- 자동 계산 결과 (읽기전용) -->
-      <label class="fl" style="margin-bottom:8px;">계산 결과 (자동)</label>
-      <div class="form-grid three">
-        <div class="fg">
-          <label class="fl">1개당 필요 폭 <span class="unit">mm</span></label>
-          <input type="text" id="res_need_w" readonly placeholder="자동계산">
-        </div>
-        <div class="fg">
-          <label class="fl">원단 1폭당 취수 <span class="unit">개</span></label>
-          <input type="number" id="res_pcs" readonly placeholder="자동계산">
-        </div>
-        <div class="fg">
-          <label class="fl">1개당 재단 길이 <span class="unit">mm</span></label>
-          <input type="number" id="res_need_l" readonly placeholder="자동계산">
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 3: 저장된 제품 프로파일 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="step-badge amber">03</div>
-        <div class="card-title">제품 규격 저장 / 불러오기</div>
-        <div class="card-desc">최대 5개 · 브라우저 저장</div>
-      </div>
-
-      <button class="btn btn-ghost" style="margin-bottom:14px;" onclick="saveProfile()">💾 현재 규격 저장</button>
-      <div class="profile-list" id="profile-list">
-        <div class="profile-empty">저장된 규격이 없습니다</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- 오른쪽: 결과 -->
-  <div class="result-panel">
-
-    <!-- 원단 폭 시각화 -->
-    <div class="fabric-vis">
-      <div class="vis-title">▸ 원단 폭 단면 (폭 방향 레이아웃)</div>
-      <div class="vis-strip">
-        <div class="vis-pcs" id="vis-pcs"></div>
-      </div>
-      <div class="vis-labels">
-        <span id="vis-left">원단 폭</span>
-        <span id="vis-right">잔여</span>
-      </div>
-    </div>
-
-    <!-- 경고 -->
-    <div class="alert-box" id="alert-box"></div>
-
-    <!-- 계산 공식 -->
-    <div class="formula-box" id="formula-box">
-      <div style="color:var(--text-mute); font-size:11px;">← 규격을 입력하면 계산식이 표시됩니다</div>
-    </div>
-
-    <!-- 메인 결과 -->
-    <div class="res-card">
-      <div class="res-big-label">▸ 본체 원단 총량</div>
+    <!-- 시접 빠른 선택 -->
+    <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;">
       <div>
-        <span class="res-big-val" id="res-total-m">—</span>
-        <span class="res-big-unit">M</span>
+        <label class="fl" style="margin-bottom:5px;">본체 시접 선택</label>
+        <div class="quick-btns" style="margin-bottom:0">
+          <div class="qbtn active" onclick="setVal('seam_body',this,20)">20</div>
+          <div class="qbtn" onclick="setVal('seam_body',this,25)">25</div>
+          <div class="qbtn" onclick="setVal('seam_body',this,30)">30</div>
+        </div>
       </div>
-      <div class="res-big-sub" id="res-total-sub">수량과 규격을 입력해 주세요</div>
-
-      <div class="res-grid">
-        <div class="res-item highlight">
-          <div class="res-item-label">취수 (1폭당)</div>
-          <div><span class="res-item-val" id="ri-pcs">—</span><span class="res-item-unit">개</span></div>
-        </div>
-        <div class="res-item">
-          <div class="res-item-label">필요 재단 장수</div>
-          <div><span class="res-item-val" id="ri-rows">—</span><span class="res-item-unit">장</span></div>
-        </div>
-        <div class="res-item">
-          <div class="res-item-label">개당 재단 길이</div>
-          <div><span class="res-item-val" id="ri-unit-len">—</span><span class="res-item-unit">mm</span></div>
-        </div>
-        <div class="res-item warn-item">
-          <div class="res-item-label">여유 포함 총량</div>
-          <div><span class="res-item-val" id="ri-margin">—</span><span class="res-item-unit">M</span></div>
-        </div>
-        <div class="res-item" id="ri-tape-box" style="grid-column:1/-1; border-color:rgba(252,211,77,0.3); background:rgba(252,211,77,0.05);">
-          <div class="res-item-label" style="color:var(--amber-dim);">링테이프 (잔여 폭 활용)</div>
-          <div id="ri-tape-val" style="font-size:13px; color:var(--amber); font-family:var(--mono); margin-top:4px;">규격 입력 후 표시</div>
+      <div>
+        <label class="fl" style="margin-bottom:5px;">상부 스냅링 선택</label>
+        <div class="quick-btns" style="margin-bottom:0">
+          <div class="qbtn" onclick="setVal('seam_snap',this,50)">50</div>
+          <div class="qbtn active" onclick="setVal('seam_snap',this,100)">100</div>
+          <div class="qbtn" onclick="setVal('seam_snap',this,150)">150</div>
         </div>
       </div>
     </div>
-
-    <!-- 버튼 -->
-    <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
-    <button class="btn btn-blue" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
-    <button class="btn btn-ghost" onclick="resetAll()">🔄 초기화</button>
-
   </div>
+
+  <!-- STEP 02: 제품 목록 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge">02</div>
+      <div class="card-title">제품 목록</div>
+      <div class="card-desc" id="prod-count-badge">0개 제품</div>
+    </div>
+
+    <div class="product-table-wrap">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">No</th>
+            <th>H<br><span style="font-weight:400;color:var(--text-mute)">내경</span></th>
+            <th>홀<br><span style="font-weight:400;color:var(--text-mute)">참고</span></th>
+            <th>링치수<br><span style="font-weight:400;color:var(--text-mute)">mm ★</span></th>
+            <th>길이 L<br><span style="font-weight:400;color:var(--text-mute)">mm ★</span></th>
+            <th>수량<br><span style="font-weight:400;color:var(--text-mute)">개 ★</span></th>
+            <th class="result-col">취수<br><span style="font-weight:400">개/폭</span></th>
+            <th class="result-col">장수<br><span style="font-weight:400">장</span></th>
+            <th class="result-col">원단<br><span style="font-weight:400">m</span></th>
+            <th style="width:32px;"></th>
+          </tr>
+        </thead>
+        <tbody id="prod-tbody"></tbody>
+        <tfoot id="prod-tfoot"></tfoot>
+      </table>
+    </div>
+
+    <button class="add-row-btn" onclick="addProduct()">＋ 제품 추가</button>
+  </div>
+
+  <!-- STEP 03: 저장 / 불러오기 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge amber">03</div>
+      <div class="card-title">전체 규격 저장 / 불러오기</div>
+      <div class="card-desc">설정 + 제품목록 통째로 저장</div>
+    </div>
+    <button class="btn btn-ghost" style="margin-bottom:12px;" onclick="saveSession()">💾 현재 목록 전체 저장</button>
+    <div class="profile-list" id="profile-list">
+      <div class="profile-empty">저장된 목록이 없습니다</div>
+    </div>
+  </div>
+
+</div><!-- /왼쪽 -->
+
+<!-- 오른쪽 결과 패널 -->
+<div class="result-panel">
+
+  <!-- 원단 폭 시각화 (포커스 제품 기준) -->
+  <div class="fabric-vis">
+    <div class="vis-title" id="vis-title">▸ 원단 폭 단면 (폭 방향 레이아웃)</div>
+    <div class="vis-strip"><div class="vis-pcs" id="vis-pcs"></div></div>
+    <div class="vis-labels"><span id="vis-left">원단 폭</span><span id="vis-right">잔여</span></div>
+  </div>
+
+  <!-- 경고 -->
+  <div class="alert-box" id="alert-box"></div>
+
+  <!-- 총합 카드 -->
+  <div class="summary-card">
+    <div class="sum-big-label">▸ 전체 원단 총량 합계</div>
+    <div>
+      <span class="sum-big-val" id="sum-total">—</span>
+      <span class="sum-big-unit"> M</span>
+    </div>
+    <div class="sum-big-sub" id="sum-sub">제품을 추가하고 규격을 입력해 주세요</div>
+
+    <!-- 제품별 결과 목록 -->
+    <div class="prod-result-list" id="prod-result-list"></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
+  <button class="btn btn-blue"    onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+  <button class="btn btn-ghost"   onclick="resetAll()">🔄 초기화</button>
 </div>
 
+</div><!-- /main -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── 원단 폭 빠른 선택 ────────────────────
-function setFabric(el, val) {
-  document.querySelectorAll('.fabric-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  if (val > 0) {
-    document.getElementById('fabric_w').value = val;
-  } else {
-    document.getElementById('fabric_w').value = '';
-    document.getElementById('fabric_w').focus();
-  }
-  calc();
-}
-function onFabricInput() {
-  document.querySelectorAll('.fabric-btn').forEach(b => b.classList.remove('active'));
+// ── 상태 ─────────────────────────────────────────
+let products = [];
+let nextId   = 1;
+let focusId  = null; // 시각화 기준 제품
+
+// ── 초기 제품 3행 ────────────────────────────────
+function initProducts() {
+  products = [];
+  for (let i = 0; i < 3; i++) addProduct(false);
+  focusId = products[0].id;
 }
 
-// ── 시접 빠른 선택 ──────────────────────
-function setSeam(type, el, val) {
-  const group = el.parentElement;
-  group.querySelectorAll('.seam-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  const id = type === 'body' ? 'seam_body' : 'seam_snap';
-  if (val > 0) {
-    document.getElementById(id).value = val;
-  } else {
-    document.getElementById(id).value = '';
-    document.getElementById(id).focus();
-  }
+function addProduct(doCalc = true) {
+  products.push({ id: nextId++, h:'', hole:'', ring:'', length:'', qty:'' });
+  if (doCalc) calc();
+}
+
+function removeProduct(id) {
+  if (products.length <= 1) { showToast('⚠️ 최소 1개 이상 필요합니다'); return; }
+  products = products.filter(p => p.id !== id);
+  if (focusId === id) focusId = products[0]?.id ?? null;
   calc();
 }
 
-// ── 링테이프 폭 빠른 선택 ───────────────
-function setTapeW(el, val) {
-  const group = el.parentElement;
-  group.querySelectorAll('.seam-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  if (val > 0) {
-    document.getElementById('tape_w').value = val;
-  } else {
-    document.getElementById('tape_w').value = '';
-    document.getElementById('tape_w').focus();
-  }
+function updateProduct(id, field, val) {
+  const p = products.find(x => x.id === id);
+  if (p) p[field] = val;
+  focusId = id;
   calc();
 }
 
-function addQty(delta) {
-  const inp = document.getElementById('qty_val');
-  inp.value = Math.max(1, (parseInt(inp.value) || 0) + delta);
-  calc();
+// ── 공통 설정 읽기 ───────────────────────────────
+function getShared() {
+  return {
+    fabricW : parseFloat(document.getElementById('fabric_w').value)   || 0,
+    seamB   : parseFloat(document.getElementById('seam_body').value)  || 0,
+    snapAdd : parseFloat(document.getElementById('seam_snap').value)  || 100,
+    hemAdd  : parseFloat(document.getElementById('seam_hem').value)   || 0,
+    tapeW   : parseFloat(document.getElementById('tape_w').value)     || 67,
+    margin  : parseFloat(document.getElementById('margin_val').value) || 0,
+  };
 }
 
-// ── 핵심 계산 ────────────────────────────
-function calc() {
-  const ring    = parseFloat(document.getElementById('ring_val').value)    || 0;
-  const lenMm   = parseFloat(document.getElementById('length_val').value)  || 0;
-  const fabricW = parseFloat(document.getElementById('fabric_w').value)    || 0;
-  const seamB   = parseFloat(document.getElementById('seam_body').value)   || 0;
-  const snapAdd = parseFloat(document.getElementById('seam_snap').value)   || 100;
-  const hemAdd  = parseFloat(document.getElementById('seam_hem').value)    || 0;
-  const qty     = parseInt(document.getElementById('qty_val').value)       || 0;
-  const margin  = parseFloat(document.getElementById('margin_val').value)  || 0;
-  const tapeW   = parseFloat(document.getElementById('tape_w').value)      || 67;
+// ── 제품 1개 계산 ────────────────────────────────
+function calcOne(p, s) {
+  const ring   = parseFloat(p.ring)   || 0;
+  const length = parseFloat(p.length) || 0;
+  const qty    = parseInt(p.qty)      || 0;
+  if (!ring || !length || !qty) return null;
 
-  // ── 폭 방향 ──
   const circ      = ring * Math.PI;
-  const needW     = circ + seamB;
-  const pcsPerRow = fabricW > 0 ? Math.floor(fabricW / needW) : 0;
-  const remainW   = fabricW > 0 ? fabricW - (pcsPerRow * needW) : 0;
+  const needW     = circ + s.seamB;
+  const pcsPerRow = s.fabricW > 0 ? Math.floor(s.fabricW / needW) : 0;
+  const remainW   = s.fabricW > 0 ? s.fabricW - pcsPerRow * needW : 0;
+  const tapePerRow= remainW >= s.tapeW ? Math.floor(remainW / s.tapeW) : 0;
+  const cutLen    = length + s.snapAdd + s.hemAdd;
+  const rows      = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;
+  const totalMm   = rows * cutLen;
+  const totalM    = totalMm / 1000;
+  const totalMMargin = totalM * (1 + s.margin / 100);
+  const tapePcs   = tapePerRow * rows;
 
-  // ── 길이 방향 ──
-  const cutLen  = lenMm + snapAdd + hemAdd;
-  const rows    = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;
-  const totalMm = rows * cutLen;
-  const totalM  = totalMm / 1000;
-  const totalMMargin = totalM * (1 + margin / 100);
+  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, totalM, totalMMargin, tapePcs };
+}
 
-  // ── 링테이프 ──
-  const tapePerRow   = remainW >= tapeW ? Math.floor(remainW / tapeW) : 0;
-  const totalTapePcs = tapePerRow * rows;
+// ── 전체 계산 ────────────────────────────────────
+function calc() {
+  const s = getShared();
+  const results = products.map(p => ({ p, r: calcOne(p, s) }));
 
-  // ── 중간값 출력 ──
-  document.getElementById('res_need_w').value = ring && seamB ? `${circ.toFixed(1)} + ${seamB} = ${needW.toFixed(1)}` : '';
-  document.getElementById('res_pcs').value    = pcsPerRow || '';
-  document.getElementById('res_need_l').value = cutLen || '';
+  renderTable(results, s);
+  renderSummary(results, s);
 
-  // ── 공식 박스 ──
-  if (ring && lenMm && fabricW) {
-    const lenLine = hemAdd > 0
-      ? `길이(${lenMm}) + 스냅링(${snapAdd}) + 덧단(${hemAdd})`
-      : `길이(${lenMm}) + 스냅링(${snapAdd})`;
-    document.getElementById('formula-box').innerHTML = `
-      <div class="formula-line"><span class="formula-eq">링(${ring}) × π</span><span class="formula-val">${circ.toFixed(2)} mm</span></div>
-      <div class="formula-line"><span class="formula-eq">둘레 + 시접(${seamB})</span><span class="formula-val">= ${needW.toFixed(2)} mm</span></div>
-      <div class="formula-line"><span class="formula-eq">원단폭(${fabricW}) ÷ ${needW.toFixed(2)}</span><span class="formula-val">= ${pcsPerRow}개 / 폭</span></div>
-      <div class="formula-line"><span class="formula-eq">잔여 폭</span><span class="formula-val">${remainW.toFixed(0)} mm</span></div>
-      <div class="formula-sep"></div>
-      <div class="formula-line"><span class="formula-eq">${lenLine}</span><span class="formula-val">재단 ${cutLen} mm</span></div>
-      <div class="formula-line"><span class="formula-eq">수량(${qty}) ÷ 취수(${pcsPerRow})</span><span class="formula-val">= ${rows} 장</span></div>
-      <div class="formula-line"><span class="formula-eq">${rows}장 × ${cutLen}mm</span><span class="formula-val">= ${totalMm.toFixed(0)} mm</span></div>
-      <div class="formula-sep"></div>
-      <div class="formula-line"><span class="formula-total">총 필요 원단</span><span class="formula-total">${totalM.toFixed(2)} M</span></div>
-      ${tapePerRow > 0 ? `<div class="formula-sep"></div><div class="formula-line" style="color:var(--amber)"><span>링테이프 ${tapeW}mm × ${tapePerRow}줄 × ${rows}장</span><span>= ${totalTapePcs}개</span></div>` : ''}
-    `;
+  // 시각화: focusId 우선, 없으면 첫 유효 제품
+  let focusEntry = results.find(e => e.p.id === focusId && e.r);
+  if (!focusEntry) focusEntry = results.find(e => e.r);
+  if (focusEntry) {
+    const { r } = focusEntry;
+    const idx = results.indexOf(focusEntry) + 1;
+    renderVis(r.pcsPerRow, r.needW, s.fabricW, r.remainW, r.tapePerRow, s.tapeW, idx);
   } else {
-    document.getElementById('formula-box').innerHTML = `<div style="color:var(--text-mute); font-size:11px;">← 규격을 입력하면 계산식이 표시됩니다</div>`;
+    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
   }
 
-  // ── 시각화 ──
-  renderVis(pcsPerRow, needW, fabricW, remainW, tapePerRow, tapeW);
-
-  // ── 경고 ──
+  // 경고
+  const alerts = [];
+  results.forEach(({ p, r }, i) => {
+    if (!r && (p.ring || p.length || p.qty)) return; // 미완성 행 무시
+    if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
+    if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
+  });
+  if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
   const alertEl = document.getElementById('alert-box');
-  let alerts = [];
-  if (pcsPerRow === 0 && ring && fabricW) alerts.push(`⚠️ 원단 폭(${fabricW}mm)이 1개 필요 폭(${needW.toFixed(1)}mm)보다 좁습니다.`);
-  if (remainW > 0 && remainW < tapeW && pcsPerRow > 0) alerts.push(`ℹ️ 잔여 폭 ${remainW.toFixed(0)}mm — 링테이프(${tapeW}mm) 취수 불가.`);
-  if (tapePerRow > 0) alerts.push(`✅ 잔여 폭 ${remainW.toFixed(0)}mm → 링테이프 ${tapePerRow}줄/장 · 총 ${totalTapePcs}개 취수 가능`);
-  if (margin === 0) alerts.push(`💡 여유율 0%입니다. 재단 손실 감안 5% 이상 권장합니다.`);
   alertEl.textContent = alerts.join('\n');
   alertEl.classList.toggle('show', alerts.length > 0);
 
-  // ── 메인 결과 ──
-  if (ring && lenMm && fabricW && qty) {
-    document.getElementById('res-total-m').textContent = totalM.toFixed(2);
-    document.getElementById('res-total-sub').textContent =
-      `${qty}개 생산 · ${pcsPerRow}개/폭 · ${rows}장 · 재단길이 ${cutLen}mm`;
-    document.getElementById('ri-pcs').textContent      = pcsPerRow;
-    document.getElementById('ri-rows').textContent     = rows;
-    document.getElementById('ri-unit-len').textContent = cutLen;
-    document.getElementById('ri-margin').textContent   = totalMMargin.toFixed(2);
-    document.getElementById('ri-tape-val').innerHTML   = tapePerRow > 0
-      ? `잔여 ${remainW.toFixed(0)}mm ÷ ${tapeW}mm = <strong style="color:var(--amber)">${tapePerRow}줄/장</strong> &nbsp;→&nbsp; 총 <strong style="color:var(--amber)">${totalTapePcs}개</strong> 취수 가능`
-      : `잔여 ${remainW.toFixed(0)}mm — 링테이프(${tapeW}mm) 취수 <span style="color:var(--red)">불가</span>`;
+  // 뱃지
+  const validCnt = results.filter(e => e.r).length;
+  document.getElementById('prod-count-badge').textContent = `${products.length}개 제품 / ${validCnt}개 계산완료`;
+}
+
+// ── 테이블 렌더 ──────────────────────────────────
+function renderTable(results, s) {
+  const tbody = document.getElementById('prod-tbody');
+  const tfoot = document.getElementById('prod-tfoot');
+
+  tbody.innerHTML = results.map(({ p, r }, i) => {
+    const focused = p.id === focusId ? 'focused-row' : '';
+    const pcs  = r ? `<span class="tbl-res">${r.pcsPerRow}</span>` : `<span class="tbl-res mute">—</span>`;
+    const rows = r ? `<span class="tbl-res">${r.rows}</span>` : `<span class="tbl-res mute">—</span>`;
+    const mVal = r ? `<span class="tbl-res amber">${r.totalMMargin.toFixed(2)}</span>` : `<span class="tbl-res mute">—</span>`;
+    return `<tr class="${focused}" onclick="setFocusRow(${p.id})">
+      <td class="tbl-num">${String(i+1).padStart(2,'0')}</td>
+      <td><input class="tbl-input" type="number" value="${p.h}"      placeholder="예)162"  onchange="updateProduct(${p.id},'h',this.value)"      oninput="updateProduct(${p.id},'h',this.value)"></td>
+      <td><input class="tbl-input" type="number" value="${p.hole}"   placeholder="참고"    onchange="updateProduct(${p.id},'hole',this.value)"   oninput="updateProduct(${p.id},'hole',this.value)"></td>
+      <td><input class="tbl-input" type="number" value="${p.ring}"   placeholder="156"     onchange="updateProduct(${p.id},'ring',this.value)"   oninput="updateProduct(${p.id},'ring',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td><input class="tbl-input" type="number" value="${p.length}" placeholder="3000"    onchange="updateProduct(${p.id},'length',this.value)" oninput="updateProduct(${p.id},'length',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td><input class="tbl-input" type="number" value="${p.qty}"    placeholder="100"     onchange="updateProduct(${p.id},'qty',this.value)"    oninput="updateProduct(${p.id},'qty',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td>${pcs}</td>
+      <td>${rows}</td>
+      <td>${mVal}</td>
+      <td><button class="del-btn" onclick="event.stopPropagation();removeProduct(${p.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  // 합계 행
+  const validResults = results.filter(e => e.r);
+  if (validResults.length > 0) {
+    const grandM = validResults.reduce((a, e) => a + e.r.totalM, 0);
+    const grandMg = validResults.reduce((a, e) => a + e.r.totalMMargin, 0);
+    const totalQty = validResults.reduce((a, e) => a + e.r.qty, 0);
+    tfoot.innerHTML = `<tr class="total-row">
+      <td colspan="6" class="total-label">합계 (${validResults.length}종 · ${totalQty}개)</td>
+      <td colspan="2" class="total-label" style="text-align:center;">순수 합계</td>
+      <td class="total-val">${grandM.toFixed(2)} M</td>
+      <td></td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="8" class="total-label">여유(${getShared().margin}%) 포함 최종 발주량</td>
+      <td class="total-val amber">${grandMg.toFixed(2)} M</td>
+      <td></td>
+    </tr>`;
   } else {
-    document.getElementById('res-total-m').textContent = '—';
-    document.getElementById('res-total-sub').textContent = '수량과 규격을 입력해 주세요';
-    ['ri-pcs','ri-rows','ri-unit-len','ri-margin'].forEach(id => {
-      document.getElementById(id).textContent = '—';
-    });
-    document.getElementById('ri-tape-val').textContent = '규격 입력 후 표시';
+    tfoot.innerHTML = '';
   }
 }
 
-// ── 원단 폭 시각화 ───────────────────────
-function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW) {
+// ── 요약 패널 렌더 ───────────────────────────────
+function renderSummary(results, s) {
+  const valid = results.filter(e => e.r);
+  const grandMg = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const grandM  = valid.reduce((a, e) => a + e.r.totalM, 0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+
+  if (valid.length > 0) {
+    document.getElementById('sum-total').textContent = grandMg.toFixed(2);
+    document.getElementById('sum-sub').textContent =
+      `${valid.length}종 · ${totalQty}개 생산 · 여유(${s.margin}%) 포함`;
+  } else {
+    document.getElementById('sum-total').textContent = '—';
+    document.getElementById('sum-sub').textContent = '제품을 추가하고 규격을 입력해 주세요';
+  }
+
+  const listEl = document.getElementById('prod-result-list');
+  if (valid.length === 0) { listEl.innerHTML = ''; return; }
+
+  listEl.innerHTML = results.map(({ p, r }, i) => {
+    if (!r) return '';
+    const focused = p.id === focusId ? 'focused' : '';
+    const ring = parseFloat(p.ring) || 0;
+    const h    = p.h || '?';
+    return `<div class="prod-result-item ${focused}" onclick="setFocusRow(${p.id})" style="cursor:pointer;">
+      <div class="pri-num">${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="pri-spec"><strong>H${h} / 링${ring} × ${p.length}L</strong></div>
+        <div class="pri-spec" style="margin-top:2px;">${p.qty}개 · 취수 ${r.pcsPerRow}개/폭 · ${r.rows}장 · 재단 ${r.cutLen}mm</div>
+      </div>
+      <div>
+        <div class="pri-val">${r.totalMMargin.toFixed(2)} M</div>
+        <div class="pri-val sub">(순 ${r.totalM.toFixed(2)})</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 포커스 행 선택 ───────────────────────────────
+function setFocusRow(id) {
+  focusId = id;
+  calc();
+}
+
+// ── 시각화 ───────────────────────────────────────
+function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW, prodIdx) {
   const cont = document.getElementById('vis-pcs');
   cont.innerHTML = '';
+  const title = document.getElementById('vis-title');
 
   if (!pcs || !fabricW) {
-    cont.innerHTML = '<div style="color:var(--text-mute);font-size:11px;padding:14px;font-family:var(--mono);">규격 입력 후 표시</div>';
+    cont.innerHTML = '<div style="color:var(--text-mute);font-size:10px;padding:12px;font-family:var(--mono);">규격 입력 후 표시</div>';
     document.getElementById('vis-left').textContent  = '원단 폭';
     document.getElementById('vis-right').textContent = '잔여';
+    title.textContent = '▸ 원단 폭 단면 (폭 방향 레이아웃)';
     return;
   }
+
+  title.textContent = `▸ ${prodIdx}번 제품 기준 — 원단 폭 단면`;
 
   for (let i = 0; i < pcs; i++) {
     const el = document.createElement('div');
@@ -843,7 +681,6 @@ function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW) {
     el.textContent = `${i+1}`;
     cont.appendChild(el);
   }
-
   if (remainW > 0) {
     if (tapePerRow > 0) {
       for (let t = 0; t < tapePerRow; t++) {
@@ -853,200 +690,188 @@ function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW) {
         tp.style.background = 'rgba(252,211,77,0.18)';
         tp.style.borderLeft  = '1px dashed rgba(252,211,77,0.5)';
         tp.style.color = 'var(--amber)';
-        tp.style.fontSize = '9px';
+        tp.style.fontSize = '8px';
         tp.textContent = `T${t+1}`;
         cont.appendChild(tp);
       }
-      const leftOver = remainW - tapePerRow * tapeW;
-      if (leftOver > 2) {
-        const lo = document.createElement('div');
-        lo.className = 'vis-piece vis-remainder';
-        lo.style.flex = leftOver;
-        lo.style.fontSize = '9px';
-        lo.textContent = `${leftOver.toFixed(0)}`;
-        cont.appendChild(lo);
+      const lo = remainW - tapePerRow * tapeW;
+      if (lo > 2) {
+        const el = document.createElement('div');
+        el.className = 'vis-piece vis-remainder';
+        el.style.flex = lo; el.style.fontSize = '8px';
+        el.textContent = lo.toFixed(0);
+        cont.appendChild(el);
       }
     } else {
       const rem = document.createElement('div');
       rem.className = 'vis-piece vis-remainder';
       rem.style.flex = remainW;
-      rem.textContent = `${remainW.toFixed(0)}`;
+      rem.textContent = remainW.toFixed(0);
       cont.appendChild(rem);
     }
   }
 
-  const totalUsed = pcs * needW;
+  const used = pcs * needW;
   document.getElementById('vis-left').textContent =
-    `원단 ${fabricW}mm → 본체 ${pcs}개${tapePerRow > 0 ? ` + 링테이프 ${tapePerRow}줄` : ''} (${(totalUsed/fabricW*100).toFixed(1)}% 사용)`;
+    `${fabricW}mm → ${pcs}개${tapePerRow > 0 ? ` + 링테이프 ${tapePerRow}줄` : ''} (${(used/fabricW*100).toFixed(1)}% 사용)`;
   document.getElementById('vis-right').textContent = remainW > 0
     ? (tapePerRow > 0 ? `링테이프 ${tapePerRow}줄` : `잔여 ${remainW.toFixed(0)}mm`)
     : '잔여 없음';
 }
 
-// ── 결과 복사 ───────────────────────────
+// ── 빠른 선택 헬퍼 ───────────────────────────────
+function setFabric(el, val) {
+  document.querySelectorAll('.qbtn.green').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (val > 0) document.getElementById('fabric_w').value = val;
+  else { document.getElementById('fabric_w').value = ''; document.getElementById('fabric_w').focus(); }
+  calc();
+}
+function onFabricInput() {
+  document.querySelectorAll('.qbtn.green').forEach(b => b.classList.remove('active'));
+}
+function setVal(inputId, el, val) {
+  const group = el.parentElement;
+  group.querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(inputId).value = val;
+  calc();
+}
+
+// ── 결과 복사 ────────────────────────────────────
 function copyResult() {
-  const h      = document.getElementById('h_val').value      || '—';
-  const hole   = document.getElementById('hole_val').value   || '—';
-  const ring   = document.getElementById('ring_val').value   || '—';
-  const lenMm  = document.getElementById('length_val').value || '—';
-  const fabricW= document.getElementById('fabric_w').value   || '—';
-  const seamB  = document.getElementById('seam_body').value  || '—';
-  const snapAdd= document.getElementById('seam_snap').value  || '100';
-  const hemAdd = document.getElementById('seam_hem').value   || '0';
-  const qty    = document.getElementById('qty_val').value    || '—';
-  const margin = document.getElementById('margin_val').value || '0';
+  const s = getShared();
+  const results = products.map(p => ({ p, r: calcOne(p, s) }));
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { showToast('⚠️ 계산된 제품이 없습니다'); return; }
 
-  const totalM  = document.getElementById('res-total-m').textContent;
-  const pcs     = document.getElementById('ri-pcs').textContent;
-  const rows    = document.getElementById('ri-rows').textContent;
-  const unitL   = document.getElementById('ri-unit-len').textContent;
-  const totalMg = document.getElementById('ri-margin').textContent;
-  const tapeVal = document.getElementById('ri-tape-val').textContent;
+  const grandM  = valid.reduce((a, e) => a + e.r.totalM,       0);
+  const grandMg = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
 
-  const text = `━━━━━━━━━━━━━━━━━━━━━━━━
+  const lines = valid.map(({ p, r }, i) =>
+    `[${String(i+1).padStart(2,'0')}] H${p.h||'?'} / 링${p.ring} × ${p.length}L · ${p.qty}개\n` +
+    `     취수 ${r.pcsPerRow}개/폭 · ${r.rows}장 · 재단 ${r.cutLen}mm · ${r.totalMMargin.toFixed(2)}M`
+  ).join('\n');
+
+  const text =
+`━━━━━━━━━━━━━━━━━━━━━━━━
 ✂️ 서진필터 재단 계산 결과
 ━━━━━━━━━━━━━━━━━━━━━━━━
 작성일시: ${new Date().toLocaleString('ko-KR')}
 
-【 백필터 규격 】
-H${h} / 홀${hole} / 링${ring} × ${lenMm}L
+【 공통 설정 】
+원단 폭: ${s.fabricW}mm  본체 시접: ${s.seamB}mm
+상부 스냅링: ${s.snapAdd}mm  하부 덧단: ${s.hemAdd}mm  여유율: ${s.margin}%
 
-【 원단 정보 】
-원단 폭: ${fabricW}mm
-본체 시접(폭): ${seamB}mm
-상부 스냅링(길이): ${snapAdd}mm
-하부 덧단(길이): ${hemAdd}mm
+【 제품별 재단 결과 】
+${lines}
 
-【 재단 계산 결과 】
-생산 수량: ${qty}개
-1폭당 취수: ${pcs}개
-재단 장수: ${rows}장
-개당 재단 길이: ${unitL}mm
-─────────────────────────
-원단 총량: ${totalM}M
-여유(${margin}%) 포함: ${totalMg}M
-링테이프: ${tapeVal}
-
+【 합계 】
+${valid.length}종 · 총 ${totalQty}개 생산
+순수 원단: ${grandM.toFixed(2)}M
+여유(${s.margin}%) 포함 발주량: ${grandMg.toFixed(2)}M
 ━━━━━━━━━━━━━━━━━━━━━━━━
-서진필터 재단 계산기 v2.1
+서진필터 재단 계산기 v3
 ━━━━━━━━━━━━━━━━━━━━━━━━`;
 
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('✅ 재단 결과가 복사되었습니다!');
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('✅ 복사 완료!');
-  });
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 결과가 복사되었습니다!'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✅ 복사 완료!');
+    });
 }
 
-// ── 저장/불러오기 (localStorage) ────────
-const STORAGE_KEY = 'sjfilter_profiles';
-const MAX_PROFILES = 5;
+// ── 세션 저장 / 불러오기 ─────────────────────────
+const SK = 'sjfilter_sessions';
+const MAX_SESSIONS = 5;
 
-function getProfiles() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
-}
-function saveProfiles(arr) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
+function getSession()  { try { return JSON.parse(localStorage.getItem(SK)) || []; } catch { return []; } }
+function setSession(a) { localStorage.setItem(SK, JSON.stringify(a)); }
 
-function saveProfile() {
-  const ring   = document.getElementById('ring_val').value;
-  const h      = document.getElementById('h_val').value;
-  const hole   = document.getElementById('hole_val').value;
-  const lenMm  = document.getElementById('length_val').value;
-  const fabricW= document.getElementById('fabric_w').value;
-  const seamB  = document.getElementById('seam_body').value;
-  const snapAdd= document.getElementById('seam_snap').value;
-  const hemAdd = document.getElementById('seam_hem').value;
+function saveSession() {
+  const s = getShared();
+  const valid = products.filter(p => p.ring && p.length && p.qty);
+  if (!valid.length) { showToast('⚠️ 링치수·길이·수량을 입력하세요'); return; }
 
-  if (!ring || !lenMm) {
-    showToast('⚠️ 링치수와 길이를 입력하세요');
-    return;
-  }
+  const sessions = getSession();
+  if (sessions.length >= MAX_SESSIONS) { showToast('⚠️ 최대 5개까지 저장됩니다. 기존 항목을 삭제해 주세요.'); return; }
 
-  const profiles = getProfiles();
-  if (profiles.length >= MAX_PROFILES) {
-    showToast('⚠️ 최대 5개까지 저장 가능합니다. 기존 항목을 삭제해 주세요.');
-    return;
-  }
+  const label = valid.length === 1
+    ? `링${valid[0].ring}×${valid[0].length}L ${valid[0].qty}개`
+    : `${valid.length}종 혼합 (링${valid[0].ring}… 외)`;
 
-  const label = `H${h||'?'} / 링${ring} / ${lenMm}L`;
-  profiles.push({ id: Date.now(), label, ring, h, hole, lenMm, fabricW, seamB, snapAdd, hemAdd });
-  saveProfiles(profiles);
+  sessions.push({ id: Date.now(), label, shared: s, products: JSON.parse(JSON.stringify(products)) });
+  setSession(sessions);
   renderProfiles();
-  showToast('💾 규격이 저장되었습니다!');
+  showToast('💾 저장되었습니다!');
 }
 
-function loadProfile(id) {
-  const p = getProfiles().find(x => x.id === id);
-  if (!p) return;
-  document.getElementById('ring_val').value    = p.ring    || '';
-  document.getElementById('h_val').value       = p.h       || '';
-  document.getElementById('hole_val').value    = p.hole    || '';
-  document.getElementById('length_val').value  = p.lenMm   || '';
-  document.getElementById('fabric_w').value    = p.fabricW || '2150';
-  document.getElementById('seam_body').value   = p.seamB   || '20';
-  document.getElementById('seam_snap').value   = p.snapAdd || '100';
-  document.getElementById('seam_hem').value    = p.hemAdd  || '0';
+function loadSession(id) {
+  const sess = getSession().find(x => x.id === id);
+  if (!sess) return;
+  // 설정 복원
+  document.getElementById('fabric_w').value   = sess.shared.fabricW;
+  document.getElementById('seam_body').value  = sess.shared.seamB;
+  document.getElementById('seam_snap').value  = sess.shared.snapAdd;
+  document.getElementById('seam_hem').value   = sess.shared.hemAdd;
+  document.getElementById('tape_w').value     = sess.shared.tapeW;
+  document.getElementById('margin_val').value = sess.shared.margin;
+  // 제품 복원
+  products = sess.products.map(p => ({ ...p }));
+  nextId   = Math.max(...products.map(p => p.id)) + 1;
+  focusId  = products[0]?.id ?? null;
   calc();
-  showToast(`📂 "${p.label}" 불러오기 완료`);
+  showToast(`📂 "${sess.label}" 불러오기 완료`);
 }
 
-function deleteProfile(id) {
-  const profiles = getProfiles().filter(x => x.id !== id);
-  saveProfiles(profiles);
+function deleteSession(id) {
+  setSession(getSession().filter(x => x.id !== id));
   renderProfiles();
   showToast('🗑️ 삭제되었습니다');
 }
 
 function renderProfiles() {
   const list = document.getElementById('profile-list');
-  const profiles = getProfiles();
-  if (!profiles.length) {
-    list.innerHTML = '<div class="profile-empty">저장된 규격이 없습니다</div>';
-    return;
-  }
-  list.innerHTML = profiles.map(p => `
+  const sessions = getSession();
+  if (!sessions.length) { list.innerHTML = '<div class="profile-empty">저장된 목록이 없습니다</div>'; return; }
+  list.innerHTML = sessions.map(s => `
     <div class="profile-item">
       <div class="profile-info">
-        <div class="profile-name">${p.label}</div>
-        <div class="profile-spec">원단 ${p.fabricW||'?'}mm · 시접 ${p.seamB||'?'}mm · 스냅링 ${p.snapAdd||'?'}mm · 덧단 ${p.hemAdd||0}mm</div>
+        <div class="profile-name">${s.label}</div>
+        <div class="profile-spec">${new Date(s.id).toLocaleDateString('ko-KR')} · 원단 ${s.shared.fabricW}mm · 여유 ${s.shared.margin}%</div>
       </div>
-      <button class="profile-btn" onclick="loadProfile(${p.id})">불러오기</button>
-      <button class="profile-btn del" onclick="deleteProfile(${p.id})">삭제</button>
+      <button class="profile-btn" onclick="loadSession(${s.id})">불러오기</button>
+      <button class="profile-btn del" onclick="deleteSession(${s.id})">삭제</button>
     </div>
   `).join('');
 }
 
-// ── 초기화 ──────────────────────────────
+// ── 초기화 ───────────────────────────────────────
 function resetAll() {
   if (!confirm('모든 입력을 초기화할까요?')) return;
-  ['h_val','ring_val','hole_val','length_val'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('qty_val').value    = '300';
   document.getElementById('fabric_w').value   = '2150';
   document.getElementById('seam_body').value  = '20';
   document.getElementById('seam_snap').value  = '100';
   document.getElementById('seam_hem').value   = '0';
-  document.getElementById('margin_val').value = '5';
   document.getElementById('tape_w').value     = '67';
-  calc();
+  document.getElementById('margin_val').value = '5';
+  initProducts();
+  renderProfiles();
   showToast('🔄 초기화 완료');
 }
 
-// ── 토스트 ──────────────────────────────
+// ── 토스트 ───────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ── 초기 실행 ───────────────────────────
+// ── 시작 ─────────────────────────────────────────
+initProducts();
 renderProfiles();
 calc();
 </script>
