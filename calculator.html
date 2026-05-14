@@ -287,15 +287,80 @@
   }
 
   /* ── 인쇄 ── */
+  /* ── 롤 수 표시 ── */
+  .roll-bar {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:rgba(96,165,250,0.07); border:1px solid rgba(96,165,250,0.2);
+    border-radius:8px; padding:10px 14px; margin-top:12px;
+    font-family:var(--mono); font-size:11px; color:var(--blue);
+  }
+  .roll-bar strong { font-size:20px; font-weight:700; }
+  .roll-bar input {
+    width:90px; font-size:12px; padding:6px 10px;
+    border-color:rgba(96,165,250,0.3); background:rgba(96,165,250,0.07); color:var(--blue);
+  }
+  .roll-bar input:focus { box-shadow:0 0 0 3px rgba(96,165,250,0.15); border-color:var(--blue-dim); }
+
+  /* ── 재단 순서 카드 ── */
+  .order-card {
+    background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+    padding:16px; margin-bottom:12px;
+  }
+  .order-title {
+    font-size:11px; color:var(--text-mute); font-family:var(--mono);
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .order-list { display:flex; flex-direction:column; gap:6px; }
+  .order-item {
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:8px; padding:9px 12px;
+  }
+  .order-item.same-group { border-color:rgba(252,211,77,0.3); background:rgba(252,211,77,0.04); }
+  .order-badge {
+    min-width:22px; height:22px; border-radius:50%;
+    background:var(--green-dark); color:var(--green-pale);
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; font-family:var(--mono); flex-shrink:0;
+  }
+  .order-spec { flex:1; font-family:var(--mono); font-size:11px; color:var(--text-dim); line-height:1.6; }
+  .order-spec strong { color:var(--text); }
+  .order-val { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--green); text-align:right; }
+  .group-tag {
+    font-size:9px; padding:1px 6px; border-radius:3px;
+    background:rgba(252,211,77,0.15); color:var(--amber);
+    border:1px solid rgba(252,211,77,0.3); font-family:var(--mono); white-space:nowrap;
+  }
+  .order-empty { font-size:11px; color:var(--text-mute); font-family:var(--mono); text-align:center; padding:12px; }
+
+  /* ── 작업 지시서 (인쇄 전용) ── */
+  #work-order { display:none; }
   @media print {
     body { background:#fff !important; color:#111 !important; }
-    .header { background:#f0f0f0 !important; }
-    .card, .summary-card, .fabric-vis, .prod-result-item, .product-table th, .product-table td {
-      background:#fff !important; border-color:#ccc !important; color:#111 !important;
+    .main-app { display:none !important; }
+    #work-order {
+      display:block !important;
+      font-family:'Noto Sans KR', sans-serif;
+      color:#111; padding:20px;
     }
-    .btn, .toast, .add-row-btn, .del-btn, .profile-btn { display:none !important; }
-    .result-panel { position:static !important; }
-    .main { grid-template-columns:1fr !important; }
+    .wo-header { text-align:center; border-bottom:3px solid #111; padding-bottom:12px; margin-bottom:20px; }
+    .wo-header h1 { font-size:22px; font-weight:900; margin-bottom:4px; }
+    .wo-header p  { font-size:12px; color:#555; }
+    .wo-meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+    .wo-meta-item { border:1px solid #ccc; border-radius:4px; padding:8px 10px; }
+    .wo-meta-label { font-size:9px; color:#888; margin-bottom:2px; }
+    .wo-meta-val   { font-size:13px; font-weight:700; }
+    .wo-section-title { font-size:13px; font-weight:700; border-left:4px solid #111; padding-left:8px; margin:16px 0 8px; }
+    .wo-table { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:16px; }
+    .wo-table th { background:#f0f0f0; border:1px solid #ccc; padding:7px 8px; text-align:center; font-weight:700; }
+    .wo-table td { border:1px solid #ccc; padding:7px 8px; text-align:center; }
+    .wo-table tr:nth-child(even) td { background:#fafafa; }
+    .wo-total-row td { background:#e8f5e9 !important; font-weight:700; }
+    .wo-sign { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:24px; }
+    .wo-sign-box { border:1px solid #ccc; border-radius:4px; padding:10px; text-align:center; }
+    .wo-sign-label { font-size:10px; color:#888; margin-bottom:20px; }
+    .wo-sign-line  { border-top:1px solid #ccc; padding-top:6px; font-size:10px; color:#aaa; }
+    .wo-footer { text-align:center; margin-top:16px; font-size:10px; color:#999; border-top:1px solid #ccc; padding-top:8px; }
   }
 </style>
 </head>
@@ -310,7 +375,7 @@
   <div class="header-tag">내부 전용</div>
 </div>
 
-<div class="main">
+<div class="main main-app">
 <div><!-- 왼쪽 -->
 
   <!-- STEP 01: 공통 설정 -->
@@ -335,7 +400,7 @@
       <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();calc()">
     </div>
 
-    <div class="form-grid five" style="gap:10px;">
+    <div class="form-grid" style="grid-template-columns:repeat(6,1fr);gap:10px;">
       <div class="fg">
         <label class="fl">본체 시접 <span class="unit">mm</span></label>
         <input type="number" id="seam_body" value="20" oninput="calc()">
@@ -361,6 +426,10 @@
           <option value="8">8%</option>
           <option value="10">10%</option>
         </select>
+      </div>
+      <div class="fg">
+        <label class="fl">롤 1개 길이 <span class="unit">m</span></label>
+        <input type="number" id="roll_len" value="100" oninput="calcOnly()" placeholder="100">
       </div>
     </div>
 
@@ -445,6 +514,12 @@
   <!-- 경고 -->
   <div class="alert-box" id="alert-box"></div>
 
+  <!-- 재단 순서 추천 -->
+  <div class="order-card" id="order-card" style="display:none;">
+    <div class="order-title">✂️ 재단 순서 추천 <span style="color:var(--text-mute);font-size:9px;margin-left:4px;">필요폭 큰 순 → 잔여 활용 최적화</span></div>
+    <div class="order-list" id="order-list"></div>
+  </div>
+
   <!-- 총합 카드 -->
   <div class="summary-card">
     <div class="sum-big-label">▸ 전체 원단 총량 합계</div>
@@ -453,17 +528,54 @@
       <span class="sum-big-unit"> M</span>
     </div>
     <div class="sum-big-sub" id="sum-sub">제품을 추가하고 규격을 입력해 주세요</div>
+    <div class="roll-bar" id="roll-bar" style="display:none;">
+      🧵 롤 수 : <strong id="sum-rolls">—</strong> 롤
+      <span style="color:var(--text-mute)">· 롤당 <span id="sum-roll-len">100</span>m 기준</span>
+    </div>
 
     <!-- 제품별 결과 목록 -->
     <div class="prod-result-list" id="prod-result-list"></div>
   </div>
 
   <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
-  <button class="btn btn-blue"    onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+  <button class="btn btn-blue"    onclick="printWorkOrder()">🖨️ 작업 지시서 인쇄</button>
   <button class="btn btn-ghost"   onclick="resetAll()">🔄 초기화</button>
 </div>
 
 </div><!-- /main -->
+
+<!-- 작업 지시서 (인쇄 전용) -->
+<div id="work-order">
+  <div class="wo-header">
+    <h1>✂️ 서진필터 재단 작업 지시서</h1>
+    <p id="wo-date"></p>
+  </div>
+  <div class="wo-meta">
+    <div class="wo-meta-item"><div class="wo-meta-label">원단 폭</div><div class="wo-meta-val" id="wo-fabric">—</div></div>
+    <div class="wo-meta-item"><div class="wo-meta-label">여유율</div><div class="wo-meta-val" id="wo-margin">—</div></div>
+    <div class="wo-meta-item"><div class="wo-meta-label">롤 기준 길이</div><div class="wo-meta-val" id="wo-roll">—</div></div>
+  </div>
+  <div class="wo-section-title">제품별 재단 내역</div>
+  <table class="wo-table">
+    <thead>
+      <tr>
+        <th>No</th><th>규격 (H × L)</th><th>링치수</th><th>수량</th>
+        <th>취수</th><th>장수</th><th>재단길이</th><th>원단량(m)</th>
+      </tr>
+    </thead>
+    <tbody id="wo-tbody"></tbody>
+    <tfoot id="wo-tfoot"></tfoot>
+  </table>
+  <div class="wo-section-title">재단 순서 추천</div>
+  <div id="wo-order"></div>
+  <div class="wo-sign">
+    <div class="wo-sign-box"><div class="wo-sign-label">작업 지시</div><div class="wo-sign-line">서명</div></div>
+    <div class="wo-sign-box"><div class="wo-sign-label">재단 담당</div><div class="wo-sign-line">서명</div></div>
+    <div class="wo-sign-box"><div class="wo-sign-label">확인</div><div class="wo-sign-line">서명</div></div>
+  </div>
+  <div class="wo-footer">서진필터 재단 계산기 v3 · 출력일: <span id="wo-print-date"></span></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -509,6 +621,7 @@ function getShared() {
     hemAdd  : parseFloat(document.getElementById('seam_hem').value)   || 0,
     tapeW   : parseFloat(document.getElementById('tape_w').value)     || 67,
     margin  : parseFloat(document.getElementById('margin_val').value) || 0,
+    rollLen : parseFloat(document.getElementById('roll_len').value)   || 100,
   };
 }
 
@@ -628,6 +741,113 @@ function calcOnly() {
   // 뱃지
   document.getElementById('prod-count-badge').textContent =
     `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
+
+  // 롤 수 계산
+  const validRes = results.filter(e => e.r);
+  const grandMgTotal = validRes.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const rollBar = document.getElementById('roll-bar');
+  if (validRes.length > 0 && s.rollLen > 0) {
+    const rolls = Math.ceil(grandMgTotal / s.rollLen);
+    document.getElementById('sum-rolls').textContent = rolls;
+    document.getElementById('sum-roll-len').textContent = s.rollLen;
+    rollBar.style.display = 'flex';
+  } else {
+    rollBar.style.display = 'none';
+  }
+
+  // 재단 순서 추천
+  renderCuttingOrder(results, s);
+}
+
+// ── 재단 순서 추천 ───────────────────────────────
+function renderCuttingOrder(results, s) {
+  const orderCard = document.getElementById('order-card');
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { orderCard.style.display = 'none'; return; }
+  orderCard.style.display = 'block';
+
+  // needW 내림차순 정렬
+  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
+
+  // 같은 needW 그룹 태깅
+  const groups = {};
+  sorted.forEach(e => {
+    const key = e.r.needW.toFixed(1);
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  let seq = 0;
+  let prevKey = null;
+  const html = sorted.map(e => {
+    const { p, r } = e;
+    const key = r.needW.toFixed(1);
+    const isSameGroup = groups[key].length > 1;
+    if (key !== prevKey) { seq++; prevKey = key; }
+    return `<div class="order-item ${isSameGroup ? 'same-group' : ''}">
+      <div class="order-badge">${seq}</div>
+      <div class="order-spec">
+        <strong>H${p.h||'?'} / 링${p.ring} × ${p.length}L</strong> · ${p.qty}개
+        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.rows}장
+        ${isSameGroup ? '<span class="group-tag">동시 재단 가능</span>' : ''}
+      </div>
+      <div class="order-val">${r.totalMMargin.toFixed(2)}M</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('order-list').innerHTML = html;
+}
+
+// ── 작업 지시서 인쇄 ─────────────────────────────
+function printWorkOrder() {
+  const s = getShared();
+  const results = products.map(p => ({ p, r: calcOne(p, s) }));
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { showToast('⚠️ 계산된 제품이 없습니다'); return; }
+
+  const dateStr = new Date().toLocaleString('ko-KR');
+  document.getElementById('wo-date').textContent = dateStr;
+  document.getElementById('wo-print-date').textContent = dateStr;
+  document.getElementById('wo-fabric').textContent = s.fabricW + 'mm';
+  document.getElementById('wo-margin').textContent = s.margin + '%';
+  document.getElementById('wo-roll').textContent = s.rollLen + 'm';
+
+  const grandM   = valid.reduce((a, e) => a + e.r.totalM, 0);
+  const grandMg  = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+  const rolls = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : '—';
+
+  document.getElementById('wo-tbody').innerHTML = valid.map(({ p, r }, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>H${p.h||'?'} × ${p.length}L</td>
+      <td>${p.ring}</td>
+      <td>${p.qty}개</td>
+      <td>${r.pcsPerRow}개/폭</td>
+      <td>${r.rows}장</td>
+      <td>${r.cutLen}mm</td>
+      <td>${r.totalMMargin.toFixed(2)}M</td>
+    </tr>`).join('');
+
+  document.getElementById('wo-tfoot').innerHTML = `
+    <tr class="wo-total-row">
+      <td colspan="3">합계 ${valid.length}종 · ${totalQty}개</td>
+      <td colspan="3">순수: ${grandM.toFixed(2)}M</td>
+      <td colspan="2">발주량: ${grandMg.toFixed(2)}M (${rolls}롤)</td>
+    </tr>`;
+
+  // 재단 순서 테이블
+  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
+  let prevNeedW = null, seqNum = 0;
+  const orderRows = sorted.map(({ p, r }) => {
+    if (r.needW.toFixed(1) !== prevNeedW) { seqNum++; prevNeedW = r.needW.toFixed(1); }
+    const sameGroup = sorted.filter(e => e.r.needW.toFixed(1) === r.needW.toFixed(1)).length > 1;
+    return `<tr><td>${seqNum}</td><td>H${p.h||'?'} × ${p.length}L</td><td>${r.needW.toFixed(1)}</td><td>${r.rows}장</td><td>${sameGroup ? '동시 재단 가능' : ''}</td></tr>`;
+  }).join('');
+  document.getElementById('wo-order').innerHTML =
+    `<table class="wo-table"><thead><tr><th>순서</th><th>규격</th><th>필요폭(mm)</th><th>장수</th><th>비고</th></tr></thead><tbody>${orderRows}</tbody></table>`;
+
+  window.print();
 }
 
 // ── 전체 재렌더 (구조 변경 시) ────────────────────
@@ -841,6 +1061,7 @@ function loadSession(id) {
   document.getElementById('seam_hem').value   = sess.shared.hemAdd;
   document.getElementById('tape_w').value     = sess.shared.tapeW;
   document.getElementById('margin_val').value = sess.shared.margin;
+  document.getElementById('roll_len').value   = sess.shared.rollLen || 100;
   // 제품 복원
   products = sess.products.map(p => ({ ...p }));
   nextId   = Math.max(...products.map(p => p.id)) + 1;
@@ -881,6 +1102,7 @@ function resetAll() {
   document.getElementById('seam_hem').value   = '0';
   document.getElementById('tape_w').value     = '67';
   document.getElementById('margin_val').value = '5';
+  document.getElementById('roll_len').value   = '100';
   initProducts();
   renderProfiles();
   showToast('🔄 초기화 완료');
