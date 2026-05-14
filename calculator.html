@@ -481,21 +481,23 @@ function initProducts() {
 
 function addProduct(doCalc = true) {
   products.push({ id: nextId++, h:'', hole:'', ring:'', length:'', qty:'' });
-  if (doCalc) calc();
+  if (doCalc) { renderTableStructure(); calcOnly(); }
 }
 
 function removeProduct(id) {
   if (products.length <= 1) { showToast('⚠️ 최소 1개 이상 필요합니다'); return; }
   products = products.filter(p => p.id !== id);
   if (focusId === id) focusId = products[0]?.id ?? null;
-  calc();
+  renderTableStructure();
+  calcOnly();
 }
 
-function updateProduct(id, field, val) {
+// 입력 중에 호출 — 구조 재렌더 없이 데이터만 갱신
+function updateField(id, field, val) {
   const p = products.find(x => x.id === id);
   if (p) p[field] = val;
   focusId = id;
-  calc();
+  calcOnly(); // 입력 DOM은 건드리지 않음
 }
 
 // ── 공통 설정 읽기 ───────────────────────────────
@@ -532,29 +534,89 @@ function calcOne(p, s) {
   return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, totalM, totalMMargin, tapePcs };
 }
 
-// ── 전체 계산 ────────────────────────────────────
-function calc() {
+// ── 테이블 구조 렌더 (행 추가/삭제/로드 시만 호출) ──
+function renderTableStructure() {
+  const tbody = document.getElementById('prod-tbody');
+  tbody.innerHTML = products.map((p, i) => `
+    <tr id="tr-${p.id}" class="${p.id === focusId ? 'focused-row' : ''}" onclick="setFocusRow(${p.id})">
+      <td class="tbl-num">${String(i+1).padStart(2,'0')}</td>
+      <td><input class="tbl-input" type="number" value="${p.h}"      placeholder="예)162"
+          oninput="updateField(${p.id},'h',this.value)"></td>
+      <td><input class="tbl-input" type="number" value="${p.hole}"   placeholder="참고"
+          oninput="updateField(${p.id},'hole',this.value)"></td>
+      <td><input class="tbl-input" type="number" value="${p.ring}"   placeholder="156"
+          oninput="updateField(${p.id},'ring',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td><input class="tbl-input" type="number" value="${p.length}" placeholder="3000"
+          oninput="updateField(${p.id},'length',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td><input class="tbl-input" type="number" value="${p.qty}"    placeholder="100"
+          oninput="updateField(${p.id},'qty',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td id="r-pcs-${p.id}"  class="tbl-res mute">—</td>
+      <td id="r-rows-${p.id}" class="tbl-res mute">—</td>
+      <td id="r-m-${p.id}"   class="tbl-res mute">—</td>
+      <td><button class="del-btn" onclick="event.stopPropagation();removeProduct(${p.id})">✕</button></td>
+    </tr>`).join('');
+}
+
+// ── 결과 셀만 갱신 (입력 DOM 건드리지 않음) ─────────
+function updateTableResults(results) {
+  results.forEach(({ p, r }) => {
+    const pEl = document.getElementById(`r-pcs-${p.id}`);
+    const rEl = document.getElementById(`r-rows-${p.id}`);
+    const mEl = document.getElementById(`r-m-${p.id}`);
+    if (!pEl) return;
+    if (r) {
+      pEl.textContent = r.pcsPerRow;  pEl.className = 'tbl-res';
+      rEl.textContent = r.rows;       rEl.className = 'tbl-res';
+      mEl.textContent = r.totalMMargin.toFixed(2); mEl.className = 'tbl-res amber';
+    } else {
+      pEl.textContent = '—'; pEl.className = 'tbl-res mute';
+      rEl.textContent = '—'; rEl.className = 'tbl-res mute';
+      mEl.textContent = '—'; mEl.className = 'tbl-res mute';
+    }
+    // focused-row 하이라이트
+    const tr = document.getElementById(`tr-${p.id}`);
+    if (tr) tr.className = p.id === focusId ? 'focused-row' : '';
+  });
+}
+
+// ── tfoot 합계 갱신 ──────────────────────────────
+function renderTfoot(results) {
+  const tfoot = document.getElementById('prod-tfoot');
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { tfoot.innerHTML = ''; return; }
+  const grandM  = valid.reduce((a, e) => a + e.r.totalM, 0);
+  const grandMg = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+  const mg = getShared().margin;
+  tfoot.innerHTML = `
+    <tr class="total-row">
+      <td colspan="6" class="total-label">합계 (${valid.length}종 · ${totalQty}개)</td>
+      <td colspan="2" class="total-label" style="text-align:center;">순수 합계</td>
+      <td class="total-val">${grandM.toFixed(2)} M</td><td></td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="8" class="total-label">여유(${mg}%) 포함 최종 발주량</td>
+      <td class="total-val amber">${grandMg.toFixed(2)} M</td><td></td>
+    </tr>`;
+}
+
+// ── 결과만 재계산 (입력 DOM 보존) ────────────────
+function calcOnly() {
   const s = getShared();
   const results = products.map(p => ({ p, r: calcOne(p, s) }));
 
-  renderTable(results, s);
+  updateTableResults(results);
+  renderTfoot(results);
   renderSummary(results, s);
 
-  // 시각화: focusId 우선, 없으면 첫 유효 제품
-  let focusEntry = results.find(e => e.p.id === focusId && e.r);
-  if (!focusEntry) focusEntry = results.find(e => e.r);
-  if (focusEntry) {
-    const { r } = focusEntry;
-    const idx = results.indexOf(focusEntry) + 1;
-    renderVis(r.pcsPerRow, r.needW, s.fabricW, r.remainW, r.tapePerRow, s.tapeW, idx);
-  } else {
-    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
-  }
+  // 시각화
+  let fe = results.find(e => e.p.id === focusId && e.r) || results.find(e => e.r);
+  if (fe) renderVis(fe.r.pcsPerRow, fe.r.needW, s.fabricW, fe.r.remainW, fe.r.tapePerRow, s.tapeW, results.indexOf(fe)+1);
+  else    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
 
   // 경고
   const alerts = [];
   results.forEach(({ p, r }, i) => {
-    if (!r && (p.ring || p.length || p.qty)) return; // 미완성 행 무시
     if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
     if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
   });
@@ -564,54 +626,14 @@ function calc() {
   alertEl.classList.toggle('show', alerts.length > 0);
 
   // 뱃지
-  const validCnt = results.filter(e => e.r).length;
-  document.getElementById('prod-count-badge').textContent = `${products.length}개 제품 / ${validCnt}개 계산완료`;
+  document.getElementById('prod-count-badge').textContent =
+    `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
 }
 
-// ── 테이블 렌더 ──────────────────────────────────
-function renderTable(results, s) {
-  const tbody = document.getElementById('prod-tbody');
-  const tfoot = document.getElementById('prod-tfoot');
-
-  tbody.innerHTML = results.map(({ p, r }, i) => {
-    const focused = p.id === focusId ? 'focused-row' : '';
-    const pcs  = r ? `<span class="tbl-res">${r.pcsPerRow}</span>` : `<span class="tbl-res mute">—</span>`;
-    const rows = r ? `<span class="tbl-res">${r.rows}</span>` : `<span class="tbl-res mute">—</span>`;
-    const mVal = r ? `<span class="tbl-res amber">${r.totalMMargin.toFixed(2)}</span>` : `<span class="tbl-res mute">—</span>`;
-    return `<tr class="${focused}" onclick="setFocusRow(${p.id})">
-      <td class="tbl-num">${String(i+1).padStart(2,'0')}</td>
-      <td><input class="tbl-input" type="number" value="${p.h}"      placeholder="예)162"  onchange="updateProduct(${p.id},'h',this.value)"      oninput="updateProduct(${p.id},'h',this.value)"></td>
-      <td><input class="tbl-input" type="number" value="${p.hole}"   placeholder="참고"    onchange="updateProduct(${p.id},'hole',this.value)"   oninput="updateProduct(${p.id},'hole',this.value)"></td>
-      <td><input class="tbl-input" type="number" value="${p.ring}"   placeholder="156"     onchange="updateProduct(${p.id},'ring',this.value)"   oninput="updateProduct(${p.id},'ring',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
-      <td><input class="tbl-input" type="number" value="${p.length}" placeholder="3000"    onchange="updateProduct(${p.id},'length',this.value)" oninput="updateProduct(${p.id},'length',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
-      <td><input class="tbl-input" type="number" value="${p.qty}"    placeholder="100"     onchange="updateProduct(${p.id},'qty',this.value)"    oninput="updateProduct(${p.id},'qty',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
-      <td>${pcs}</td>
-      <td>${rows}</td>
-      <td>${mVal}</td>
-      <td><button class="del-btn" onclick="event.stopPropagation();removeProduct(${p.id})">✕</button></td>
-    </tr>`;
-  }).join('');
-
-  // 합계 행
-  const validResults = results.filter(e => e.r);
-  if (validResults.length > 0) {
-    const grandM = validResults.reduce((a, e) => a + e.r.totalM, 0);
-    const grandMg = validResults.reduce((a, e) => a + e.r.totalMMargin, 0);
-    const totalQty = validResults.reduce((a, e) => a + e.r.qty, 0);
-    tfoot.innerHTML = `<tr class="total-row">
-      <td colspan="6" class="total-label">합계 (${validResults.length}종 · ${totalQty}개)</td>
-      <td colspan="2" class="total-label" style="text-align:center;">순수 합계</td>
-      <td class="total-val">${grandM.toFixed(2)} M</td>
-      <td></td>
-    </tr>
-    <tr class="total-row">
-      <td colspan="8" class="total-label">여유(${getShared().margin}%) 포함 최종 발주량</td>
-      <td class="total-val amber">${grandMg.toFixed(2)} M</td>
-      <td></td>
-    </tr>`;
-  } else {
-    tfoot.innerHTML = '';
-  }
+// ── 전체 재렌더 (구조 변경 시) ────────────────────
+function calc() {
+  renderTableStructure();
+  calcOnly();
 }
 
 // ── 요약 패널 렌더 ───────────────────────────────
@@ -655,7 +677,7 @@ function renderSummary(results, s) {
 // ── 포커스 행 선택 ───────────────────────────────
 function setFocusRow(id) {
   focusId = id;
-  calc();
+  calcOnly(); // 구조 재렌더 불필요
 }
 
 // ── 시각화 ───────────────────────────────────────
@@ -823,7 +845,8 @@ function loadSession(id) {
   products = sess.products.map(p => ({ ...p }));
   nextId   = Math.max(...products.map(p => p.id)) + 1;
   focusId  = products[0]?.id ?? null;
-  calc();
+  renderTableStructure();
+  calcOnly();
   showToast(`📂 "${sess.label}" 불러오기 완료`);
 }
 
@@ -873,7 +896,8 @@ function showToast(msg) {
 // ── 시작 ─────────────────────────────────────────
 initProducts();
 renderProfiles();
-calc();
+renderTableStructure();
+calcOnly();
 </script>
 </body>
 </html>
