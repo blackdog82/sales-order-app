@@ -266,6 +266,35 @@
   .profile-btn.del:hover { border-color: var(--red); color: var(--red); }
   .profile-empty { font-size: 11px; color: var(--text-mute); font-family: var(--mono); padding: 14px; text-align: center; }
 
+  /* 재단 규격 카드 */
+  .cut-spec-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; margin-bottom: 12px;
+  }
+  .cut-spec-title {
+    font-size: 10px; color: var(--text-mute); font-family: var(--mono);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .cut-spec-table {
+    width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px;
+  }
+  .cut-spec-table th {
+    color: var(--text-mute); font-weight: 600; font-size: 9px;
+    padding: 5px 8px; text-align: center; border-bottom: 1px solid var(--border);
+    letter-spacing: 0.3px;
+  }
+  .cut-spec-table th.w-col { color: var(--blue); }
+  .cut-spec-table th.l-col { color: var(--green); }
+  .cut-spec-table td {
+    padding: 7px 8px; text-align: center; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .cut-spec-table tr:last-child td { border-bottom: none; }
+  .cut-spec-val-w { color: var(--blue); font-weight: 700; font-size: 13px; }
+  .cut-spec-val-l { color: var(--green); font-weight: 700; font-size: 13px; }
+  .cut-spec-label { color: var(--text-dim); font-size: 10px; }
+  .cut-spec-num   { color: var(--text-mute); font-size: 10px; font-weight: 700; }
+
   /* 토스트 */
   .toast {
     position: fixed; bottom: 24px; left: 50%;
@@ -539,6 +568,23 @@
     <div class="prod-result-list" id="prod-result-list"></div>
   </div>
 
+  <!-- 재단 규격 카드 -->
+  <div class="cut-spec-card" id="cut-spec-card" style="display:none;">
+    <div class="cut-spec-title">📐 제품별 재단 규격 <span style="margin-left:auto;font-size:9px;">폭 = 링치수×π+시접 &nbsp;|&nbsp; 총길이 = 장수×재단길이</span></div>
+    <table class="cut-spec-table">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>링치수</th>
+          <th class="w-col">재단 폭<br><span style="font-weight:400">(mm)</span></th>
+          <th>장수</th>
+          <th class="l-col">총 재단 길이<br><span style="font-weight:400">(mm)</span></th>
+        </tr>
+      </thead>
+      <tbody id="cut-spec-tbody"></tbody>
+    </table>
+  </div>
+
   <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
   <button class="btn btn-blue"    onclick="printWorkOrder()">🖨️ 작업 지시서 인쇄</button>
   <button class="btn btn-ghost"   onclick="resetAll()">🔄 초기화</button>
@@ -770,6 +816,26 @@ function calcOnly() {
 
   // 재단 순서 추천
   renderCuttingOrder(results, s);
+
+  // 재단 규격 카드
+  renderCutSpec(results);
+}
+
+// ── 재단 규격 카드 ───────────────────────────────
+function renderCutSpec(results) {
+  const card = document.getElementById('cut-spec-card');
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  document.getElementById('cut-spec-tbody').innerHTML = valid.map(({ p, r }, i) => `
+    <tr>
+      <td class="cut-spec-num">${String(i+1).padStart(2,'0')}</td>
+      <td class="cut-spec-label">H${p.h||'?'} / <strong style="color:var(--text)">${p.ring}</strong></td>
+      <td class="cut-spec-val-w">${Math.round(r.needW)}</td>
+      <td class="cut-spec-label">${r.rows}장</td>
+      <td class="cut-spec-val-l">${r.totalMm.toLocaleString()}</td>
+    </tr>`).join('');
 }
 
 // ── 재단 순서 추천 ───────────────────────────────
